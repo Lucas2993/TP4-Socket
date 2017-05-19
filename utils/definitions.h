@@ -14,7 +14,12 @@
 #define MAX_APELLIDO 16
 
 #define MAX_MENSAJE_CONFIRMACION 61
+
 #define MAX_MENSAJE_ERROR 62
+
+#define MAX_NOMBRE_SOLICITUD 59
+
+#define MAX_DATOS 509
 
 #define M_INICIAR_SESION 1
 #define M_REGISTRO 2
@@ -45,6 +50,27 @@ struct error{
 	char OP;
 	char ID_SUB_OP_Fallo;
 	char mensaje [MAX_MENSAJE_ERROR];
+};
+
+struct solicitud{
+	char OP;
+	char ID_Usuario;
+	char ID_SUB_OP;
+	char ID_Album;
+	char ID_Archivo;
+	char nombre [MAX_NOMBRE_SOLICITUD];
+};
+
+struct envio{
+	char OP;
+	char Tipo_Archivo;
+	char Longitud_Datos;
+	char Datos [MAX_DATOS];
+};
+
+struct cerrar_sesion{
+	char OP;
+	char ID_Usuario;
 };
 
 
