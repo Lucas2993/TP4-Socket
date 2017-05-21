@@ -25,32 +25,32 @@
 #define M_REGISTRO 2
 #define M_CONFIRMAR 3
 
-struct inciar_sesion{
+typedef struct{
 	char OP;
-	char usuario [MAX_USUARIO];
-	char clave [MAX_CLAVE];
-};
+	char *usuario;
+	char *clave;
+}INICIAR_SESION;
 
-struct registro{
+typedef struct{
 	char OP;
 	char usuario [MAX_USUARIO];
 	char clave [MAX_CLAVE];
 	char nombre_completo[MAX_NOMBRE];
 	char apellido [MAX_APELLIDO];
-};
+}REGISTRO;
 
-struct confirmar{
+typedef struct{
 	char OP;
 	char ID_usuario;
 	char ID_SUB_OP;
 	char mensaje [MAX_MENSAJE_CONFIRMACION];
-};
+}CONFIRMAR;
 
-struct error{
+typedef struct{
 	char OP;
 	char ID_SUB_OP_Fallo;
 	char mensaje [MAX_MENSAJE_ERROR];
-};
+}ERROR;
 
 struct solicitud{
 	char OP;
