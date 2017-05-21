@@ -12,6 +12,9 @@ typedef enum boolean{
 	FALSE, TRUE
 }BOOLEAN;
 
+#define MAXLINEA 100
+#define MAXCLI   10
+
 #define MAX_USUARIO 16
 #define MAX_CLAVE 15
 #define MAX_NOMBRE 16
