@@ -4,6 +4,7 @@
 #include <netdb.h>
 
 #include <stdio.h>
+#include <string.h>
 #include "../utils/definitions.h"
 #include "client.h"
 
@@ -49,6 +50,7 @@ int main(int argc, char ** argv){
 int principal( FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa ) {
 	int n;
 	char linea_env[MAXLINEA], linea_rcb[ MAXLINEA + 1 ];
+	char nombre [] = "Lucas";
 
 	SOLICITUD prueba;
 	
@@ -57,7 +59,7 @@ int principal( FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa ) 
 	prueba.ID_SUB_OP = '2';
 	prueba.ID_Album = '0';
 	prueba.ID_Archivo = '0';
-	prueba.nombre = "Lucas";
+	strcpy(prueba.nombre, nombre);
 
 	/* TODO Se necesita crear el servidor que reciba este mensaje y lo pueda leer.
 	 * TODO Tambien se necesita crear un mensaje de respuesta que pueda ser interpretado de este lado.
