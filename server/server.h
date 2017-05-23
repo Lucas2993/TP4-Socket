@@ -13,7 +13,13 @@
 #include "../utils/eco.h"
 #include "../utils/definitions.h"
 
-void procesar( int descriptor, struct sockaddr *dir_cli_p, socklen_t longcli );
+void procesar(int, struct sockaddr *, socklen_t);
 
+void * resolver(int, char *);
+
+void * iniciar_sesion(char *);
+void * registrar(char *);
+void * solicitud(char *);
+void * cerrar_sesion(char *);
 
 #endif /* SERVER_SERVER_H_ */

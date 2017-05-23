@@ -32,6 +32,9 @@ typedef enum boolean{
 #define M_REGISTRO 2
 #define M_CONFIRMAR 3
 #define M_ERROR 4
+#define M_SOLICITUD 5
+#define M_ENVIAR 6
+#define M_CERRAR_SESION 7
 
 typedef struct inciar_sesion{
 	char OP;
