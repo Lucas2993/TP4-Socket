@@ -12,6 +12,9 @@ typedef enum boolean{
 	FALSE, TRUE
 }BOOLEAN;
 
+#define MAXLINEA 100
+#define MAXCLI   10
+
 #define MAX_USUARIO 16
 #define MAX_CLAVE 15
 #define MAX_NOMBRE 16
@@ -28,6 +31,7 @@ typedef enum boolean{
 #define M_INICIAR_SESION 1
 #define M_REGISTRO 2
 #define M_CONFIRMAR 3
+#define M_ERROR 4
 
 typedef struct inciar_sesion{
 	char OP;
