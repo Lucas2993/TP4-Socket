@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-#define MAXLINEA 100
+#define MAXLINEA 100000
 #define MAXCLI   10
 
 
