@@ -19,6 +19,10 @@ Por ultimo de debe chequear crear links, para que las carpetas esten enlazadas a
 
 Ahora, para crear el proyecto SERVIDOR solo se debe repetir los mismos pasos, cambiando la seleccion de la carpeta client, por la carpeta server.
 
+### Login (Primer version)  
+
+Este programa es la v1 del cliente donde intenta hacer un login, pasandole el usuario x linea de comandos, como tercer argumento, en este caso el servidor retornara una CONFIRMACION o un ERROR segun corresponda. Para que el usuario sea confimado ingrese usuario "Ema"
+
 ## Documentacion de Sockets API
  
 [http://www.on-time.com/rtos-32-docs/rtip-32/reference-manual/socket-api/sendto.htm](http://www.on-time.com/rtos-32-docs/rtip-32/reference-manual/socket-api/sendto.htm)
