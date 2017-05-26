@@ -144,8 +144,38 @@ void * registrar(char * mensaje) {
 
 }
 
-void * solicitud(char * mensaje) {
+void * solicitud(char * mensaje){
+	SOLICITUD * solicitud = (SOLICITUD *)mensaje;
 
+	switch(solicitud->ID_SUB_OP){
+	case SubOP_Listar_albumes:
+		break;
+	case SubOP_Crear_album:
+		break;
+	case SubOP_Modificar_album:
+		break;
+	case SubOP_Eliminar_album:
+		break;
+	case SubOP_Listar_archivos_album:
+		break;
+	case SubOP_Subir_archivo_album:
+		break;
+	case SubOP_Modificar_archivo_album:
+		break;
+	case SubOP_Eliminar_archivo_album:
+		break;
+	case SubOP_Compartir_album_usuario:
+		break;
+	case SubOP_Dejar_compartir_album_usuario:
+		break;
+	case SubOP_Listar_usuario:
+		break;
+	default:
+		ERROR error;
+		error->ID_SUB_OP_Fallo = solicitud->ID_SUB_OP;
+		
+		break;
+	}
 }
 
 void * cerrar_sesion(char * mensaje) {

@@ -36,6 +36,18 @@ typedef enum boolean{
 #define M_ENVIAR 6
 #define M_CERRAR_SESION 7
 
+#define SubOP_Listar_albumes 1
+#define SubOP_Crear_album 2
+#define SubOP_Modificar_album 3
+#define SubOP_Eliminar_album 4
+#define SubOP_Listar_archivos_album 5
+#define SubOP_Subir_archivo_album 6
+#define SubOP_Modificar_archivo_album 7
+#define SubOP_Eliminar_archivo_album 8
+#define SubOP_Compartir_album_usuario 9
+#define SubOP_Dejar_compartir_album_usuario 10
+#define SubOP_Listar_usuario 11
+
 typedef struct inciar_sesion{
 	char OP;
 	char usuario [MAX_USUARIO];
