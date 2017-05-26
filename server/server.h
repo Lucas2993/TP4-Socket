@@ -16,8 +16,8 @@
 void procesar(int, struct sockaddr *, socklen_t);
 
 void * resolver(int, char *);
-
-void * iniciar_sesion(char *);
+void * iniciar_sesion(char mensaje[]);
+void * verificar_usuario(INICIAR_SESION *iniciar_sesion);
 void * registrar(char *);
 void * solicitud(char *);
 void * cerrar_sesion(char *);
