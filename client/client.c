@@ -5,8 +5,12 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "../utils/definitions.h"
+#include "menu.h"
 #include "client.h"
+
+int id_usuario = -1;
 
 int main(int argc, char ** argv) {
 	int descriptor;
@@ -50,124 +54,153 @@ int main(int argc, char ** argv) {
 int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 	int n;
 	char linea_env[MAXLINEA], linea_rcb[MAXLINEA + 1];
-	char nombre[] = "Lucas";
 
-	SOLICITUD prueba;
+	// Inicio de sesion y registro.
+	MENU_ITEM menu_principal [ITEMS_MENU_PRINCIPAL] = {
+														{"Iniciar Sesion", iniciar_sesion},
+														{"Registrarse", registro},
+														{"Salir", salir}
+													};
+	MENU_ITEM menu_sesion [ITEMS_MENU_SESION] = {
+												{"Listar Album", salir},
+												{"Ver Album", salir},
+												{"Crear Album", salir},
+												{"Modificar Album", salir},
+												{"Borrar Album", salir},
+												{"Cerrar Sesion", cerrar_sesion}
+											};
 
-	prueba.OP = '5';
-	prueba.ID_Usuario = '1';
-	prueba.ID_SUB_OP = '2';
-	prueba.ID_Album = '0';
-	prueba.ID_Archivo = '0';
-	strcpy(prueba.nombre, nombre);
-
+	int items_menu_actual;
+	ITEM_MENU menu_actual;
 	int opcion;
+	void * mensaje;
+	int longitud_mensaje = 0;
 
-	for (;;) {
-	BEGIN:;
-	system("clear");
-	printf("Bienvenido a TuAlbum\n");
-	printf("\n\n 1 - Iniciar Sesion.\n 2 - Registrarce.\n 0 - Salir.\n\n   ");
-	scanf("%d", &opcion);
-	printf("%d\n", opcion);
-
-	INICIAR_SESION* iniciar_sesion;
-
-
-		switch (opcion) {
-		case 1:
-			/*-------------------------------------------------------------------*/
-			/* 							Iniciar Sesión  					   	 */
-			/*-------------------------------------------------------------------*/
-
-			iniciar_sesion = (INICIAR_SESION *) malloc(sizeof(INICIAR_SESION));
-			iniciar_sesion->OP = M_INICIAR_SESION;
-
-			system("clear");
-			printf("Por favor, ingrese su nombre de usuario\n");
-			scanf("%s", iniciar_sesion->usuario);
-
-			system("clear");
-			printf("Ingrese contraseña\n");
-			scanf("%s", iniciar_sesion->clave);
-
-			system("clear");
-			printf("%d : %s -> %s\n", iniciar_sesion->OP,
-					iniciar_sesion->usuario, iniciar_sesion->clave);
-
-			sendto(sockfd, (void *) iniciar_sesion, sizeof(iniciar_sesion), 0,
-					dir, sa);
-
-			n = recvfrom(sockfd, linea_rcb, MAXLINEA, 0, NULL, NULL);
-			linea_rcb[n] = '\0';
-			printf("Recibido: %d\n", linea_rcb[0]);
-
-			if (linea_rcb[0] == M_CONFIRMAR) {
-				CONFIRMAR* confirmar = (CONFIRMAR *) linea_rcb;
-				printf("confirmación : %s\n", confirmar->mensaje);
-				int subopcion;
-				for(;;){
-					system("clear");
-					printf("Bienvenido a TuAlbum %s\n",iniciar_sesion->usuario);
-					printf("\n\n 1 - Listar Album.\n 2 - Ver Album.\n 3 - Crear Album.\n 4 - Modificar Album.\n 5 - Borrar Album.\n 0 - Salir.\n\n   ");
-					scanf("%d",&subopcion);
-
-					switch (subopcion) {
-					case 0:
-						goto BEGIN;
-					case 1:
-						//TODO: Listar album
-						break;
-					case 2:
-						// TODO: Ver ALbum
-						break;
-					case 3:
-						// TODO: Crear Album
-						break;
-					case 4:
-						// TODO: Modificar Album
-						break;
-					case 5:
-						// TODO: Borrar Album
-						break;
-
-					default:
-						printf("\n Ingrese una opcion valida\n");
-						break;
-
-					}
-				}
-			} else {
-				ERROR *error = (ERROR *) linea_rcb;
-				printf("error : %s\n", error->mensaje);
-				break;
-			}
-			break;
-		case 2:
-			/*-------------------------------------------------------------------*/
-			/* 							Registrar        					   	 */
-			/*-------------------------------------------------------------------*/
-			printf("registrar\n");
-
-			break;
-		case 0:
-			printf("salir\n");
-			return FALSE;
-		default:
-			printf("\n Ingrese una opcion valida");
-			break;
+	for(;;){
+		if(id_usuario != -1){
+			menu_actual = menu_sesion;
+			items_menu_actual = ITEMS_MENU_SESION;
 		}
+		else{
+			menu_actual = menu_principal;
+			items_menu_actual = ITEMS_MENU_PRINCIPAL;
+		}
+		imprimir_menu(menu_actual, items_menu_actual);
+		opcion = obtener_opcion();
+		mensaje = realizar_operacion(menu_actual, items_menu_actual, opcion, &longitud_mensaje);
+		sendto(sockfd, (void *) mensaje, longitud_mensaje, 0,dir, sa);
+		// TODO: Incorporar la recepcion de una respuesta y analisis de la misma para brindar un mensaje al usuario.
 
-		/* TODO Se necesita crear el servidor que reciba este mensaje y lo pueda leer.
-		 * TODO Tambien se necesita crear un mensaje de respuesta que pueda ser interpretado de este lado.
-		 */
-//	sendto(sockfd, (void *) &prueba, sizeof(prueba), 0, dir, sa);
-//
-//	n = recvfrom(sockfd, linea_rcb, MAXLINEA, 0, NULL, NULL);
-//	linea_rcb[n] = '\0';
-//	printf("Recibido: %s\n", linea_rcb);
+		n = recvfrom( sockfd, linea_rcb, MAXLINEA, 0, NULL, NULL );
+		analizar_respuesta(linea_rcb);
 	}
 
 	return 0;
 
+}
+
+void * salir(int * longitud){
+	printf("Adios!\n");
+	exit(0);
+	return NULL;
+}
+
+void * iniciar_sesion(int * longitud){
+	char usuario[MAX_USUARIO];
+	char clave[MAX_CLAVE];
+	INICIAR_SESION * mensaje_iniciar_sesion;
+
+	bzero((char *) usuario, sizeof(char) * MAX_USUARIO);
+	bzero((char *) clave, sizeof(char) * MAX_CLAVE);
+
+	printf("Ingrese su nombre de usuario: ");
+	scanf("%s", usuario);
+
+	printf("Ingrese su contraseña: ");
+	scanf("%s", clave);
+
+	mensaje_iniciar_sesion = (INICIAR_SESION *)malloc(sizeof(INICIAR_SESION));
+
+	mensaje_iniciar_sesion->OP = M_INICIAR_SESION;
+	strcpy(mensaje_iniciar_sesion->usuario, usuario);
+	strcpy(mensaje_iniciar_sesion->clave, clave);
+
+	*longitud = sizeof(INICIAR_SESION);
+
+	return (void *)mensaje_iniciar_sesion;
+}
+
+void * registro(int * longitud){
+	char nombre_completo[MAX_NOMBRE];
+	char apellido[MAX_APELLIDO];
+	char usuario[MAX_USUARIO];
+	char clave[MAX_CLAVE];
+	REGISTRO * mensaje_registro;
+
+	printf("Ingrese su nombre: ");
+	scanf("%s", nombre_completo);
+
+	printf("Ingrese su apellido: ");
+	scanf("%s", apellido);
+
+	printf("Ingrese su nombre de usuario: ");
+	scanf("%s", usuario);
+
+	printf("Ingrese su contraseña: ");
+	scanf("%s", clave);
+
+	mensaje_registro = (REGISTRO *)malloc(sizeof(REGISTRO));
+
+	mensaje_registro->OP = M_REGISTRO;
+	strcpy(mensaje_registro->nombre_completo, nombre_completo);
+	strcpy(mensaje_registro->apellido, apellido);
+	strcpy(mensaje_registro->usuario, usuario);
+	strcpy(mensaje_registro->clave, clave);
+
+	*longitud = sizeof(REGISTRO);
+
+	return (void *)mensaje_registro;
+}
+
+void analizar_respuesta(char * linea_rcb){
+	ERROR * mensaje_error;
+	CONFIRMAR * mensaje_confirmacion;
+
+
+	switch(*linea_rcb){
+	case M_ERROR:
+		mensaje_error = (ERROR *)linea_rcb;
+		printf("%s\n", mensaje_error->mensaje);
+		break;
+	case M_CONFIRMAR:
+		mensaje_confirmacion = (CONFIRMAR *)linea_rcb;
+		if(mensaje_confirmacion->ID_Usuario - '0' > 0){
+			id_usuario = mensaje_confirmacion->ID_Usuario - '0';
+			printf("Id de usuario obtenido: %d\n", id_usuario);
+		}
+		else{
+			if(mensaje_confirmacion->ID_SUB_OP - '0' == 0){
+				id_usuario = -1;
+			}
+		}
+		printf("%s\n", mensaje_confirmacion->mensaje);
+		break;
+	default:
+		printf("Error desconocido\n");
+		break;
+	}
+
+}
+
+void * cerrar_sesion(int * longitud){
+	CERRAR_SESION * mensaje_cerrar_sesion;
+
+	mensaje_cerrar_sesion = (CERRAR_SESION *)malloc(sizeof(CERRAR_SESION));
+
+	mensaje_cerrar_sesion->OP = M_CERRAR_SESION;
+	mensaje_cerrar_sesion->ID_Usuario = id_usuario + '0';
+
+	*longitud = sizeof(CERRAR_SESION);
+
+	return (void *)mensaje_cerrar_sesion;
 }

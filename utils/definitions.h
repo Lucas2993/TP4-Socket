@@ -64,7 +64,7 @@ typedef struct registro{
 
 typedef struct confirmar{
 	char OP;
-	char ID_usuario;
+	char ID_Usuario;
 	char ID_SUB_OP;
 	char mensaje [MAX_MENSAJE_CONFIRMACION];
 }CONFIRMAR;

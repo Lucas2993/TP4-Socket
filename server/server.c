@@ -5,6 +5,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "sesion.h"
+#include "usuario.h"
 #include "../utils/definitions.h"
 #include "server.h"
 
@@ -50,6 +52,7 @@ int id_user = 0;
  *-----------------------------------------------------------------------*/
 void procesar(int descriptor, struct sockaddr *dir_cli_p, socklen_t longcli) {
 	int recibido;
+	int longitud_respuesta;
 	socklen_t longitud;
 	char msg[MAXLINEA];
 	void* respuesta;
@@ -58,94 +61,130 @@ void procesar(int descriptor, struct sockaddr *dir_cli_p, socklen_t longcli) {
 	for (;;) {
 		longitud = longcli;
 		recibido = recvfrom(descriptor, msg, MAXLINEA, 0, dir_cli_p, &longitud);
-		msg[recibido] = '\0';
-		printf("mng -> %d\n",msg[0]);
+		
 		// Llamado a la funcion
+		respuesta = resolver(recibido, msg, &longitud_respuesta);
 
-		respuesta = resolver(recibido, msg);
-
-		sendto(descriptor, (void *) respuesta, sizeof(respuesta), 0, dir_cli_p, longitud);
+		sendto(descriptor, (void *) respuesta, longitud_respuesta, 0, dir_cli_p, longitud);
 	}
 }
 
-//void* resolver(int longitud, char * mensaje) {
-void* resolver(int longitud, char mensaje[]) {
-
-//	char* copia_mensaje = (char *) malloc(sizeof(char) * longitud);
-	char copia_msg [longitud];
-	strcpy(copia_msg, mensaje);
-
-	printf("copia mng -> %s\n",copia_msg);
-
-	switch (copia_msg[0]) {
+void* resolver(int longitud, char * mensaje, int * longitud_respuesta) {
+	switch (*mensaje) {
 	case M_INICIAR_SESION:
-		printf("Iniciando sesion\n");
-		return iniciar_sesion(copia_msg);
+		return iniciar_sesion(mensaje, longitud_respuesta);
 		break;
 	case M_REGISTRO:
-		return registrar(copia_msg);
+		return registrar(mensaje, longitud_respuesta);
 		break;
 	case M_SOLICITUD:
-		return solicitud(copia_msg);
+		return solicitud(mensaje, longitud_respuesta);
 		break;
 	case M_CERRAR_SESION:
-		return cerrar_sesion(copia_msg);
+		return cerrar_sesion(mensaje, longitud_respuesta);
 		break;
 	}
-
-//	if(*mensaje == '5'){
-//		prueba = (SOLICITUD *) copia_mensaje;
-//		printf("OP = %c\n", prueba->OP);
-//		printf("ID_Usuario = %c\n", prueba->ID_Usuario);
-//		printf("ID_SUB_OP = %c\n", prueba->ID_SUB_OP);
-//		printf("ID_Album = %c\n", prueba->ID_Album);
-//		printf("ID_Archivo = %c\n", prueba->ID_Archivo);
-//		printf("Nombre = %s\n", prueba->nombre);
-//	}
-//	else{
-//		printf("No funco...\n");
-//	}
 	return NULL;
 }
 
-void * iniciar_sesion(char mensaje[]) {
+void * iniciar_sesion(char * mensaje, int * longitud_respuesta) {
 	INICIAR_SESION *iniciar_sesion = (INICIAR_SESION *) mensaje;
-	printf("Leido %d -> %s\n", iniciar_sesion->OP, iniciar_sesion->usuario);
-	return verificar_usuario(iniciar_sesion);
-}
+	USUARIO * usuario;
+	ERROR * mensaje_error = NULL;
+	CONFIRMAR * mensaje_confirmacion = NULL;
+	int numero_sesion = 0;
 
-void * verificar_usuario(INICIAR_SESION *iniciar_sesion) {
+	usuario = buscar_usuario(iniciar_sesion->usuario);
 
-	if (strcmp(iniciar_sesion->usuario, "Ema") == 0) {
-				printf("OK\n");
-				CONFIRMAR *confirmar;
-				confirmar = (CONFIRMAR *) malloc(sizeof(CONFIRMAR));
-				confirmar->OP = M_CONFIRMAR;
-				confirmar->ID_usuario = '1';
-				confirmar->ID_SUB_OP = '0';
-				id_user = 1;
-				char res[]="Usuario correcto";
-				strcpy(confirmar->mensaje, res);
-				return confirmar;
+	if(usuario != NULL){
+		printf("Usuario encontrado: %s y %s\n", usuario->usuario, usuario->clave);
 
-			} else {
-				printf("ERROR\n");
-				ERROR *error;
-				error = (ERROR *) malloc(sizeof(ERROR));
-				error->OP = M_ERROR;
-				error->ID_SUB_OP_Fallo = '0';
-				char res[] = "Usuario incorrecto";
-				strcpy(error->mensaje, res);
-				return error;
+		if(strcmp(iniciar_sesion->clave, usuario->clave) == 0){
+			
+			numero_sesion = buscar_sesion_por_usuario(usuario->usuario);
+			if(numero_sesion < 0){
+				numero_sesion = asignar_numero_sesion();
+				agregar_sesion(usuario->usuario, numero_sesion);	
 			}
+
+			mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
+
+			mensaje_confirmacion->OP = M_CONFIRMAR;
+			mensaje_confirmacion->ID_Usuario = numero_sesion + '0';
+			mensaje_confirmacion->ID_SUB_OP = '0';
+			strcpy(mensaje_confirmacion->mensaje, "Sesion iniciada correctamente!");
+
+			*longitud_respuesta = sizeof(CONFIRMAR);
+
+			return (void *) mensaje_confirmacion;	
+		}
+		else{
+			mensaje_error = (ERROR *)malloc(sizeof(ERROR));
+
+			mensaje_error->OP = M_ERROR;
+			mensaje_error->ID_SUB_OP_Fallo = '0';
+			strcpy(mensaje_error->mensaje, "Error: Contraseña incorrecta!");
+
+			*longitud_respuesta = sizeof(ERROR);
+
+			return (void *) mensaje_error;
+		}
+	}
+	else{
+		printf("Usuario no encontrado\n");
+		mensaje_error = (ERROR *)malloc(sizeof(ERROR));
+
+		mensaje_error->OP = M_ERROR;
+		mensaje_error->ID_SUB_OP_Fallo = '0';
+		strcpy(mensaje_error->mensaje, "Error: El usuario especificado no existe!");
+
+		*longitud_respuesta = sizeof(ERROR);
+
+		return (void *) mensaje_error;
+	}
+	return NULL;
 }
 
-void * registrar(char * mensaje) {
+void * registrar(char * mensaje, int * longitud_respuesta) {
+	REGISTRO *registro = (REGISTRO *) mensaje;
+	ERROR * mensaje_error = NULL;
+	CONFIRMAR * mensaje_confirmacion = NULL;
+	USUARIO * usuario;
+	BOOLEAN resultado;
 
+	usuario = buscar_usuario(registro->usuario);
+
+	if(usuario == NULL){
+		resultado = agregar_usuario(registro->usuario, registro->clave, registro->nombre_completo, registro->apellido);
+
+		mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
+
+		mensaje_confirmacion->OP = M_CONFIRMAR;
+		mensaje_confirmacion->ID_Usuario = '0';
+		mensaje_confirmacion->ID_SUB_OP = '0';
+		strcpy(mensaje_confirmacion->mensaje, "Usuario registrado correctamente!");
+
+		*longitud_respuesta = sizeof(CONFIRMAR);
+
+		return (void *) mensaje_confirmacion;	
+	}
+	else{
+		printf("Usuario ya existente\n");
+		mensaje_error = (ERROR *)malloc(sizeof(ERROR));
+
+		mensaje_error->OP = M_ERROR;
+		mensaje_error->ID_SUB_OP_Fallo = '0';
+		strcpy(mensaje_error->mensaje, "Error: El usuario especificado ya existe!");
+
+		*longitud_respuesta = sizeof(ERROR);
+
+		return (void *) mensaje_error;
+	}
 }
 
-void * solicitud(char * mensaje){
+void * solicitud(char * mensaje, int * longitud_respuesta){
 	SOLICITUD * solicitud = (SOLICITUD *)mensaje;
+	ERROR error;
 
 	switch(solicitud->ID_SUB_OP){
 	case SubOP_Listar_albumes:
@@ -171,13 +210,42 @@ void * solicitud(char * mensaje){
 	case SubOP_Listar_usuario:
 		break;
 	default:
-		ERROR error;
-		error->ID_SUB_OP_Fallo = solicitud->ID_SUB_OP;
+		error.ID_SUB_OP_Fallo = solicitud->ID_SUB_OP;
 		
 		break;
 	}
 }
 
-void * cerrar_sesion(char * mensaje) {
+void * cerrar_sesion(char * mensaje, int * longitud_respuesta) {
+	CERRAR_SESION *cerrar_sesion = (CERRAR_SESION *) mensaje;
+	ERROR * mensaje_error = NULL;
+	CONFIRMAR * mensaje_confirmacion = NULL;
+	BOOLEAN resultado;
 
+	resultado = cerrar_sesion_usuario(cerrar_sesion->ID_Usuario - '0');
+
+	if(resultado){
+		mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
+
+		mensaje_confirmacion->OP = M_CONFIRMAR;
+		mensaje_confirmacion->ID_Usuario = '0';
+		mensaje_confirmacion->ID_SUB_OP = '0';
+		strcpy(mensaje_confirmacion->mensaje, "Sesion cerrada correctamente!");
+
+		*longitud_respuesta = sizeof(CONFIRMAR);
+
+		return (void *) mensaje_confirmacion;
+	}
+	else{
+		printf("Error al cerrar sesion\n");
+		mensaje_error = (ERROR *)malloc(sizeof(ERROR));
+
+		mensaje_error->OP = M_ERROR;
+		mensaje_error->ID_SUB_OP_Fallo = '0';
+		strcpy(mensaje_error->mensaje, "Error: No se pudo cerrar la sesion");
+
+		*longitud_respuesta = sizeof(ERROR);
+
+		return (void *) mensaje_error;
+	}
 }

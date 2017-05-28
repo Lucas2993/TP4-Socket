@@ -10,16 +10,14 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "../utils/eco.h"
 #include "../utils/definitions.h"
 
 void procesar(int, struct sockaddr *, socklen_t);
 
-void * resolver(int, char *);
-void * iniciar_sesion(char mensaje[]);
-void * verificar_usuario(INICIAR_SESION *iniciar_sesion);
-void * registrar(char *);
-void * solicitud(char *);
-void * cerrar_sesion(char *);
+void * resolver(int, char *, int *);
+void * iniciar_sesion(char *, int *);
+void * registrar(char *, int *);
+void * solicitud(char *, int *);
+void * cerrar_sesion(char *, int *);
 
 #endif /* SERVER_SERVER_H_ */

@@ -13,11 +13,20 @@
 #include <string.h>
 
 #include "client.h"
-#include "../utils/eco.h"
 #include "../utils/definitions.h"
 
 
+#define ITEMS_MENU_PRINCIPAL 3
+#define ITEMS_MENU_SESION 6
+
 int principal( FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa );
+void analizar_respuesta(char *);
+
+void * iniciar_sesion(int *);
+void * cerrar_sesion(int *);
+void * registro(int *);
+
+void * salir(int *);
 
 
 #endif /* CLIENT_CLIENT_H_ */
