@@ -63,10 +63,16 @@ int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 													};
 	MENU_ITEM menu_sesion [ITEMS_MENU_SESION] = {
 												{"Listar Album", salir},
-												{"Ver Album", salir},
-												{"Crear Album", salir},
+												{"Crear Album", crear_album},
 												{"Modificar Album", salir},
-												{"Borrar Album", salir},
+												{"Eliminar Album", salir},
+												{"Listar Archivos Album", salir},
+												{"Subir Archivo Album", salir},
+												{"Modificar Archivo Album", salir},
+												{"Eliminar Archivo Album", salir},
+												{"Compartir Album Usuario", salir},
+												{"Dejar Compartir Album Usuario", salir},
+												{"Listar Usuarios", salir},
 												{"Cerrar Sesion", cerrar_sesion}
 											};
 
@@ -203,4 +209,25 @@ void * cerrar_sesion(int * longitud){
 	*longitud = sizeof(CERRAR_SESION);
 
 	return (void *)mensaje_cerrar_sesion;
+}
+
+void * crear_album(int * longitud){
+	char nombre_album [MAX_NOMBRE_SOLICITUD];
+	SOLICITUD * mensaje_solicitud;
+
+	printf("Ingrese el nombre del nuevo album\n");
+	scanf("%s", nombre_album);
+
+	mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
+
+	mensaje_solicitud->OP = M_SOLICITUD;
+	mensaje_solicitud->ID_Usuario = id_usuario + '0';
+	mensaje_solicitud->ID_SUB_OP = SubOP_Crear_album;
+	mensaje_solicitud->ID_Album = '0';
+	mensaje_solicitud->ID_Archivo = '0';
+	strcpy(mensaje_solicitud->nombre, nombre_album);
+
+	*longitud = sizeof(SOLICITUD);
+
+	return (void *)mensaje_solicitud;
 }

@@ -8,6 +8,7 @@
 #include "sesion.h"
 #include "usuario.h"
 #include "../utils/definitions.h"
+#include "album.h"
 #include "server.h"
 
 void main(int argc, char *argv[]) {
@@ -57,6 +58,9 @@ void procesar(int descriptor, struct sockaddr *dir_cli_p, socklen_t longcli) {
 	char msg[MAXLINEA];
 	void* respuesta;
 	int i;
+
+	crear_carpeta_general_albumes();
+
 
 	for (;;) {
 		longitud = longcli;
@@ -184,12 +188,43 @@ void * registrar(char * mensaje, int * longitud_respuesta) {
 
 void * solicitud(char * mensaje, int * longitud_respuesta){
 	SOLICITUD * solicitud = (SOLICITUD *)mensaje;
-	ERROR error;
+	CONFIRMAR * mensaje_confirmacion;
+	ERROR * mensaje_error;
+	char * nombre_usuario;
 
 	switch(solicitud->ID_SUB_OP){
 	case SubOP_Listar_albumes:
 		break;
 	case SubOP_Crear_album:
+		nombre_usuario = buscar_usuario_por_sesion(solicitud->ID_Usuario - '0');
+
+		if(nombre_usuario != NULL){
+			if(crear_album(solicitud->nombre, nombre_usuario)){
+				if(registrar_album(solicitud->nombre, nombre_usuario)){
+					mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
+
+					mensaje_confirmacion->OP = M_CONFIRMAR;
+					mensaje_confirmacion->ID_Usuario = solicitud->ID_Usuario;
+					mensaje_confirmacion->ID_SUB_OP = SubOP_Crear_album;
+					strcpy(mensaje_confirmacion->mensaje, "Album creado correctamente!");
+
+					*longitud_respuesta = sizeof(CONFIRMAR);
+
+					return (void *) mensaje_confirmacion;	
+				}
+			}
+		}
+		else{
+			mensaje_error = (ERROR *)malloc(sizeof(ERROR));
+
+			mensaje_error->OP = M_ERROR;
+			mensaje_error->ID_SUB_OP_Fallo = '0';
+			strcpy(mensaje_error->mensaje, "Error: No se pudo crear el album!");
+
+			*longitud_respuesta = sizeof(ERROR);
+
+			return (void *) mensaje_error;
+		}
 		break;
 	case SubOP_Modificar_album:
 		break;
@@ -210,7 +245,7 @@ void * solicitud(char * mensaje, int * longitud_respuesta){
 	case SubOP_Listar_usuario:
 		break;
 	default:
-		error.ID_SUB_OP_Fallo = solicitud->ID_SUB_OP;
+		// mensaje_error->ID_SUB_OP_Fallo = solicitud->ID_SUB_OP;
 		
 		break;
 	}

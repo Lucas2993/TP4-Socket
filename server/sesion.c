@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "../utils/definitions.h"
 #include "sesion.h"
 
@@ -88,4 +89,29 @@ BOOLEAN cerrar_sesion_usuario(int id_usuario){
 	}
 
 	return resultado;
+}
+
+char * buscar_usuario_por_sesion(int id_usuario){
+	FILE * archivo;
+	BOOLEAN encontrado = FALSE;
+	char usuario[MAX_USUARIO];
+	int id = -1;
+	char * respuesta = NULL;
+
+	archivo = fopen(ARCHIVO_SESIONES, "r");
+
+	if(archivo != NULL){
+		while(fscanf(archivo, "%s", usuario) > 0 && !encontrado){
+			fscanf(archivo, "%d", &id);
+			printf("%s y %d y %d\n", usuario, id, id_usuario);
+			if(id == id_usuario){
+				encontrado = TRUE;
+				respuesta = (char *)malloc(sizeof(char) * strlen(usuario));
+				strcpy(respuesta, usuario);
+			}
+		}
+		fclose(archivo);
+	}
+
+	return respuesta;
 }

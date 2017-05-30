@@ -18,7 +18,7 @@
 # ubicación servidores
 VIA_SRV = server
 
-OBJS_SRV = $(VIA_SRV)/server.o $(VIA_SRV)/usuario.o $(VIA_SRV)/sesion.o
+OBJS_SRV = $(VIA_SRV)/server.o $(VIA_SRV)/usuario.o $(VIA_SRV)/sesion.o $(VIA_SRV)/album.o
 
 # ubicación clientes
 VIA_CLI = client
@@ -49,3 +49,6 @@ usuario.o:	$(VIA_SRV)/usuario.c $(VIA_SRV)/usuario.h $(VIA_UTIL)/definitions.h
 
 sesion.o:	$(VIA_SRV)/sesion.c $(VIA_SRV)/sesion.h $(VIA_UTIL)/definitions.h
 	cc -c $(VIA_SRV)/sesion.c
+
+album.o:	$(VIA_SRV)/album.c $(VIA_SRV)/album.h $(VIA_UTIL)/definitions.h
+	cc -c $(VIA_SRV)/album.c

@@ -7,3 +7,4 @@ BOOLEAN agregar_sesion(char *, int);
 int buscar_sesion_por_usuario(char *);
 int asignar_numero_sesion(void);
 BOOLEAN cerrar_sesion_usuario(int);
+char * buscar_usuario_por_sesion(int);
