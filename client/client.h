@@ -27,6 +27,8 @@ void * cerrar_sesion(int *);
 void * registro(int *);
 
 void * crear_album(int *);
+void * eliminar_album(int *);
+
 
 void * salir(int *);
 

@@ -32,7 +32,7 @@ OBJS_CLI = $(VIA_CLI)/client.o $(VIA_CLI)/menu.o
 socket: $(OBJS_SRV) $(OBJS_CLI)
 	cc $(OBJS_SRV) -o $(VIA_SRV)/server
 	cc $(OBJS_CLI) -o $(VIA_CLI)/client
-	
+
 # 1.- Servidor de eco iterativo sobre UDP
 server.o:	$(VIA_SRV)/server.c $(VIA_SRV)/server.h $(VIA_UTIL)/definitions.h $(VIA_SRV)/usuario.h
 	cc -c $(VIA_SRV)/server.c
@@ -41,7 +41,7 @@ server.o:	$(VIA_SRV)/server.c $(VIA_SRV)/server.h $(VIA_UTIL)/definitions.h $(VI
 client.o: 	$(VIA_CLI)/client.c $(VIA_CLI)/client.h $(VIA_UTIL)/definitions.h $(VIA_CLI)/menu.h
 	cc -c $(VIA_CLI)/client.c
 
-menu.o:	$(VIA_CLI)/menu.c $(VIA_CLI)/menu.h 
+menu.o:	$(VIA_CLI)/menu.c $(VIA_CLI)/menu.h
 	cc -c $(VIA_CLI)/menu.c
 
 usuario.o:	$(VIA_SRV)/usuario.c $(VIA_SRV)/usuario.h $(VIA_UTIL)/definitions.h

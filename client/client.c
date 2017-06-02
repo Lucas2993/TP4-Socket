@@ -25,7 +25,7 @@ int main(int argc, char ** argv) {
 		exit(-1);
 	}
 
-	/*--------------------------------------------------------------------* 
+	/*--------------------------------------------------------------------*
 	 * Establecer la dirección del servidor y conectarse
 	 *--------------------------------------------------------------------*/
 	bzero((char *) &dir, sizeof(dir)); // Se blanquea toda la estructura
@@ -65,7 +65,7 @@ int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 												{"Listar Album", salir},
 												{"Crear Album", crear_album},
 												{"Modificar Album", salir},
-												{"Eliminar Album", salir},
+												{"Eliminar Album", eliminar_album},
 												{"Listar Archivos Album", salir},
 												{"Subir Archivo Album", salir},
 												{"Modificar Archivo Album", salir},
@@ -226,6 +226,27 @@ void * crear_album(int * longitud){
 	mensaje_solicitud->ID_Album = '0';
 	mensaje_solicitud->ID_Archivo = '0';
 	strcpy(mensaje_solicitud->nombre, nombre_album);
+
+	*longitud = sizeof(SOLICITUD);
+
+	return (void *)mensaje_solicitud;
+}
+
+void * eliminar_album(int * longitud){
+	// char nombre_album [MAX_NOMBRE_SOLICITUD];
+	SOLICITUD * mensaje_solicitud;
+	int id_album;
+	printf("Ingrese el id del album\n");
+	scanf("%d", &id_album);
+
+	mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
+
+	mensaje_solicitud->OP = M_SOLICITUD;
+	mensaje_solicitud->ID_Usuario = id_usuario + '0';
+	mensaje_solicitud->ID_SUB_OP = SubOP_Eliminar_album;
+	mensaje_solicitud->ID_Album = id_album+'0';
+	mensaje_solicitud->ID_Archivo = '0';
+	strcpy(mensaje_solicitud->nombre, "nada");
 
 	*longitud = sizeof(SOLICITUD);
 

@@ -12,3 +12,5 @@ typedef struct usuario{
 
 USUARIO * buscar_usuario(char *);
 BOOLEAN agregar_usuario(char *, char *, char *, char *);
+BOOLEAN crear_usuario(char * );
+BOOLEAN validar_usuario( int  );

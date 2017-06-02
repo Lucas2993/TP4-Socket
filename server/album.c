@@ -10,7 +10,7 @@
 BOOLEAN crear_album(char * nombre, char * usuario){
 	char folder [] = "albumes/";
 	char * route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(nombre) + strlen(usuario));
-
+ 
 	strcpy(route, folder);
 	strcat(route, usuario);
 	strcat(route, "/");

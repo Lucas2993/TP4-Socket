@@ -43,12 +43,41 @@ BOOLEAN agregar_usuario(char * usuario, char * clave, char * nombre, char * apel
 	FILE * archivo;
 	BOOLEAN resultado = FALSE;
 	archivo = fopen (ARCHIVO_USUARIOS, "a");
-
+	printf("usuario : %s\n",usuario );
 	if(archivo != NULL){
 		fprintf(archivo, "%s %s %s %s\n", usuario, clave, nombre, apellido);
 		fclose(archivo);
+		BOOLEAN res = crear_usuario(usuario);
+		printf("resultado %d\n",res );
 		resultado = TRUE;
 	}
 
 	return resultado;
+}
+
+BOOLEAN crear_usuario(char * usuario){
+	char folder [] = "albumes/";
+	char * route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(usuario));
+
+	strcpy(route, folder);
+	strcat(route, usuario);
+
+	if(mkdir(route, 0777) == 0){
+		return TRUE;
+	}
+	return FALSE;
+}
+
+
+BOOLEAN validar_usuario( int  id ){
+	ERROR * mensaje_error;
+	char * nombre_usuario;
+
+	nombre_usuario = buscar_usuario_por_sesion( id );
+
+	if(nombre_usuario == NULL){
+		return FALSE;
+	}
+	return TRUE;
+
 }
