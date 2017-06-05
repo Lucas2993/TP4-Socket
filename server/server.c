@@ -230,8 +230,14 @@ void * subOP_crear_album( SOLICITUD * solicitud , int * longitud_respuesta ){
 }// fin subOP_crear_album
 
 void * subOP_eliminar_album( SOLICITUD * solicitud,int * longitud_respuesta){
+		char * nombre_usuario;
+		nombre_usuario = buscar_usuario_por_sesion(solicitud->ID_Usuario - '0');
 
-}
+		if(eliminar_album(solicitud->nombre, nombre_usuario )){
+				return mensaje_confirmacion(M_CONFIRMAR ,solicitud->ID_Usuario, SubOP_Eliminar_album , "Album borrado correctamente!", longitud_respuesta);
+		}
+		return mensaje_error(M_ERROR , '0' ,"Error: No se pudo eliminar el album", longitud_respuesta);
+}// fin subOP_eliminar_album
 
 
 void * mensaje_error(char codigo_OP , char codigo_Sub_OP ,char * mensaje , int * longitud_respuesta){

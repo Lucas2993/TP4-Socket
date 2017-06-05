@@ -91,6 +91,7 @@ int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 			menu_actual = menu_principal;
 			items_menu_actual = ITEMS_MENU_PRINCIPAL;
 		}
+
 		imprimir_menu(menu_actual, items_menu_actual);
 		opcion = obtener_opcion();
 		mensaje = realizar_operacion(menu_actual, items_menu_actual, opcion, &longitud_mensaje);
@@ -114,58 +115,70 @@ void * salir(int * longitud){
 void * iniciar_sesion(int * longitud){
 	char usuario[MAX_USUARIO];
 	char clave[MAX_CLAVE];
-	INICIAR_SESION * mensaje_iniciar_sesion;
 
-	bzero((char *) usuario, sizeof(char) * MAX_USUARIO);
-	bzero((char *) clave, sizeof(char) * MAX_CLAVE);
+	// TODO esta lineas sirven? para que?
+	// bzero((char *) usuario, sizeof(char) * MAX_USUARIO);
+	// bzero((char *) clave, sizeof(char) * MAX_CLAVE);
 
-	printf("Ingrese su nombre de usuario: ");
-	scanf("%s", usuario);
-
-	printf("Ingrese su contraseña: ");
-	scanf("%s", clave);
-
-	mensaje_iniciar_sesion = (INICIAR_SESION *)malloc(sizeof(INICIAR_SESION));
-
-	mensaje_iniciar_sesion->OP = M_INICIAR_SESION;
-	strcpy(mensaje_iniciar_sesion->usuario, usuario);
-	strcpy(mensaje_iniciar_sesion->clave, clave);
-
-	*longitud = sizeof(INICIAR_SESION);
-
-	return (void *)mensaje_iniciar_sesion;
+	obtener_datos_iniciar_sesion(usuario,clave);
+	return mensaje_iniciar_sesion( usuario , clave ,longitud );
 }
 
+void obtener_datos_iniciar_sesion( char * usuario , char * clave ){
+	obtener_datos("Ingrese su nombre de usuario: ","%s",usuario);
+	obtener_datos("Ingrese su contraseña: ","%s",clave);
+}
+
+void obtener_datos( char * ouput , char * tipo , void * dato ){
+		printf(ouput);
+		scanf(tipo, dato);
+}
+
+void * mensaje_iniciar_sesion(char * usuario , char * clave , int * longitud){
+		INICIAR_SESION * mensaje_iniciar_sesion;
+		mensaje_iniciar_sesion = (INICIAR_SESION *)malloc(sizeof(INICIAR_SESION));
+
+		mensaje_iniciar_sesion->OP = M_INICIAR_SESION;
+		strcpy(mensaje_iniciar_sesion->usuario, usuario);
+		strcpy(mensaje_iniciar_sesion->clave, clave);
+
+		*longitud = sizeof(INICIAR_SESION);
+
+		return (void *)mensaje_iniciar_sesion;
+}
+
+
 void * registro(int * longitud){
-	char nombre_completo[MAX_NOMBRE];
+	char nombre[MAX_NOMBRE];
 	char apellido[MAX_APELLIDO];
 	char usuario[MAX_USUARIO];
 	char clave[MAX_CLAVE];
-	REGISTRO * mensaje_registro;
 
-	printf("Ingrese su nombre: ");
-	scanf("%s", nombre_completo);
+	obtener_datos_registro(nombre,apellido,usuario,clave);
+	return mensaje_registro(nombre,apellido,usuario,clave,longitud);
+}
 
-	printf("Ingrese su apellido: ");
-	scanf("%s", apellido);
 
-	printf("Ingrese su nombre de usuario: ");
-	scanf("%s", usuario);
+void obtener_datos_registro(char * nombre , char * apellido , char * usuario , char * clave ){
 
-	printf("Ingrese su contraseña: ");
-	scanf("%s", clave);
+	obtener_datos("Ingrese su nombre: ","%s",nombre);
+	obtener_datos("Ingrese su nombre de apellido: ","%s",apellido);
+	obtener_datos("Ingrese su nombre de usuario: ","%s",usuario);
+	obtener_datos("Ingrese su contraseña: ","%s",clave);
+}
 
-	mensaje_registro = (REGISTRO *)malloc(sizeof(REGISTRO));
+void * mensaje_registro(char * nombre,char * apellido ,char * usuario,char * clave, int * longitud){
+		REGISTRO * mensaje_registro;
+		mensaje_registro = (REGISTRO *)malloc(sizeof(REGISTRO));
 
-	mensaje_registro->OP = M_REGISTRO;
-	strcpy(mensaje_registro->nombre_completo, nombre_completo);
-	strcpy(mensaje_registro->apellido, apellido);
-	strcpy(mensaje_registro->usuario, usuario);
-	strcpy(mensaje_registro->clave, clave);
+		mensaje_registro->OP = M_REGISTRO;
+		strcpy(mensaje_registro->nombre_completo, nombre);
+		strcpy(mensaje_registro->apellido, apellido);
+		strcpy(mensaje_registro->usuario, usuario);
+		strcpy(mensaje_registro->clave, clave);
 
-	*longitud = sizeof(REGISTRO);
-
-	return (void *)mensaje_registro;
+		*longitud = sizeof(REGISTRO);
+		return (void *)mensaje_registro;
 }
 
 void analizar_respuesta(char * linea_rcb){
@@ -199,56 +212,49 @@ void analizar_respuesta(char * linea_rcb){
 }
 
 void * cerrar_sesion(int * longitud){
-	CERRAR_SESION * mensaje_cerrar_sesion;
+	return mensaje_cerrar_sesion(id_usuario , longitud);
+}
 
+void * mensaje_cerrar_sesion(char id , int * longitud ){
+	CERRAR_SESION * mensaje_cerrar_sesion;
 	mensaje_cerrar_sesion = (CERRAR_SESION *)malloc(sizeof(CERRAR_SESION));
 
 	mensaje_cerrar_sesion->OP = M_CERRAR_SESION;
-	mensaje_cerrar_sesion->ID_Usuario = id_usuario + '0';
+	mensaje_cerrar_sesion->ID_Usuario = id + '0';
 
 	*longitud = sizeof(CERRAR_SESION);
-
 	return (void *)mensaje_cerrar_sesion;
 }
 
+
 void * crear_album(int * longitud){
 	char nombre_album [MAX_NOMBRE_SOLICITUD];
-	SOLICITUD * mensaje_solicitud;
 
-	printf("Ingrese el nombre del nuevo album\n");
-	scanf("%s", nombre_album);
+	obtener_datos("Ingrese el nombre del nuevo album\n","%s",nombre_album);
+	return mensaje_solicitud( id_usuario+ '0' , SubOP_Crear_album , '0' , '0' , nombre_album, longitud );
 
-	mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
+}
 
-	mensaje_solicitud->OP = M_SOLICITUD;
-	mensaje_solicitud->ID_Usuario = id_usuario + '0';
-	mensaje_solicitud->ID_SUB_OP = SubOP_Crear_album;
-	mensaje_solicitud->ID_Album = '0';
-	mensaje_solicitud->ID_Archivo = '0';
-	strcpy(mensaje_solicitud->nombre, nombre_album);
+void * mensaje_solicitud(char id_usuario_ , char codigo_Sub_OP , char id_album , char id_archivo ,char * nombre_solicitud, int * longitud ){
+		SOLICITUD * mensaje_solicitud;
+		mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
 
-	*longitud = sizeof(SOLICITUD);
+		mensaje_solicitud->OP = M_SOLICITUD;
+		mensaje_solicitud->ID_Usuario = id_usuario_;
+		mensaje_solicitud->ID_SUB_OP = codigo_Sub_OP;
+		mensaje_solicitud->ID_Album = id_album;
+		mensaje_solicitud->ID_Archivo = id_archivo;
+		strcpy(mensaje_solicitud->nombre, nombre_solicitud);
 
-	return (void *)mensaje_solicitud;
+		*longitud = sizeof(SOLICITUD);
+		return (void *)mensaje_solicitud;
 }
 
 void * eliminar_album(int * longitud){
-	// char nombre_album [MAX_NOMBRE_SOLICITUD];
-	SOLICITUD * mensaje_solicitud;
 	int id_album;
-	printf("Ingrese el id del album\n");
-	scanf("%d", &id_album);
+	// obtener_datos("Ingrese el id del album a eliminar\n","%d",&id_album);
+	char nombre_album [MAX_NOMBRE_SOLICITUD];
+	obtener_datos("Ingrese el nombre del album a eliminar\n","%s",nombre_album);
+	return mensaje_solicitud( id_usuario+ '0' , SubOP_Eliminar_album , id_album+'0' , '0' , nombre_album, longitud );
 
-	mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
-
-	mensaje_solicitud->OP = M_SOLICITUD;
-	mensaje_solicitud->ID_Usuario = id_usuario + '0';
-	mensaje_solicitud->ID_SUB_OP = SubOP_Eliminar_album;
-	mensaje_solicitud->ID_Album = id_album+'0';
-	mensaje_solicitud->ID_Archivo = '0';
-	strcpy(mensaje_solicitud->nombre, "nada");
-
-	*longitud = sizeof(SOLICITUD);
-
-	return (void *)mensaje_solicitud;
 }

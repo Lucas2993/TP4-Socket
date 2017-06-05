@@ -10,7 +10,7 @@
 BOOLEAN crear_album(char * nombre, char * usuario){
 	char folder [] = "albumes/";
 	char * route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(nombre) + strlen(usuario));
- 
+
 	strcpy(route, folder);
 	strcat(route, usuario);
 	strcat(route, "/");
@@ -70,6 +70,21 @@ BOOLEAN crear_carpeta_general_albumes(void){
 	char folder [] = "albumes";
 
 	if(mkdir(folder, 0777) == 0){
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOLEAN eliminar_album(char * nombre, char * usuario){
+	char folder [] = "albumes/";
+	char * route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(nombre) + strlen(usuario));
+
+	strcpy(route, folder);
+	strcat(route, usuario);
+	strcat(route, "/");
+	strcat(route, nombre);
+
+	if(remove(route) == 0){
 		return TRUE;
 	}
 	return FALSE;
