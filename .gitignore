@@ -1,3 +1,4 @@
+.project
 /.project
 client/*.o
 server/*.o
