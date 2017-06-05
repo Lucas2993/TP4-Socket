@@ -1,5 +1,5 @@
 /.project
-client/client.o
-server/server.o
+client/*.o
+server/*.o
 client/client
 server/server

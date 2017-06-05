@@ -43,7 +43,7 @@ BOOLEAN agregar_usuario(char * usuario, char * clave, char * nombre, char * apel
 	FILE * archivo;
 	BOOLEAN resultado = FALSE;
 	archivo = fopen (ARCHIVO_USUARIOS, "a");
-	printf("usuario : %s\n",usuario );
+	// printf("usuario : %s\n",usuario );
 	if(archivo != NULL){
 		fprintf(archivo, "%s %s %s %s\n", usuario, clave, nombre, apellido);
 		fclose(archivo);
