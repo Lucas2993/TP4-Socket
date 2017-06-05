@@ -18,7 +18,7 @@
 # ubicación servidores
 VIA_SRV = server
 
-OBJS_SRV = $(VIA_SRV)/server.o $(VIA_SRV)/usuario.o $(VIA_SRV)/sesion.o $(VIA_SRV)/album.o
+OBJS_SRV = $(VIA_SRV)/server.o $(VIA_SRV)/usuario.o $(VIA_SRV)/sesion.o $(VIA_SRV)/album.o $(VIA_SRV)/server_ftp.o
 
 # ubicación clientes
 VIA_CLI = client
@@ -26,7 +26,7 @@ VIA_CLI = client
 # ubicacion utilidades
 VIA_UTIL = utils
 
-OBJS_CLI = $(VIA_CLI)/client.o $(VIA_CLI)/menu.o
+OBJS_CLI = $(VIA_CLI)/client.o $(VIA_CLI)/menu.o $(VIA_CLI)/client_ftp.o
 
 # paquete completo de clientes y servidores
 socket: $(OBJS_SRV) $(OBJS_CLI)
@@ -52,3 +52,9 @@ sesion.o:	$(VIA_SRV)/sesion.c $(VIA_SRV)/sesion.h $(VIA_UTIL)/definitions.h
 
 album.o:	$(VIA_SRV)/album.c $(VIA_SRV)/album.h $(VIA_UTIL)/definitions.h
 	cc -c $(VIA_SRV)/album.c
+
+server_ftp.o:	$(VIA_SRV)/server_ftp.c $(VIA_SRV)/server_ftp.h $(VIA_UTIL)/definitions.h
+	cc -c $(VIA_SRV)/server_ftp.c
+
+client_ftp.o:	$(VIA_CLI)/client_ftp.c $(VIA_CLI)/client_ftp.h $(VIA_UTIL)/definitions.h
+	cc -c $(VIA_CLI)/client_ftp.c

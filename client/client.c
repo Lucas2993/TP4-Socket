@@ -8,9 +8,13 @@
 #include <stdlib.h>
 #include "../utils/definitions.h"
 #include "menu.h"
+#include "client_ftp.h"
 #include "client.h"
 
 int id_usuario = -1;
+char * direccion;
+int puerto_cliente;
+int puerto_servidor;
 
 int main(int argc, char ** argv) {
 	int descriptor;
@@ -19,13 +23,17 @@ int main(int argc, char ** argv) {
 	/*---------------------------------------------------------------------*
 	 * Verificar los argumentos
 	 *---------------------------------------------------------------------*/
-	if (argc < 3) {
+	if (argc < 5) {
 		printf("Uso: cliente <direccion>\n");
-		printf("     Donde: <direccion> = <ip> <puerto>\n");
+		printf("     Donde: <direccion> = <ip> <puerto_udp> <puerto_cliente_tcp> <puerto_servidor_tcp>\n");
 		exit(-1);
 	}
 
-	/*--------------------------------------------------------------------*
+	direccion = argv[1];
+	puerto_cliente = atoi(argv[3]);
+	puerto_servidor = atoi(argv[4]);
+
+	/*--------------------------------------------------------------------* 
 	 * Establecer la dirección del servidor y conectarse
 	 *--------------------------------------------------------------------*/
 	bzero((char *) &dir, sizeof(dir)); // Se blanquea toda la estructura
@@ -67,7 +75,7 @@ int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 												{"Modificar Album", salir},
 												{"Eliminar Album", eliminar_album},
 												{"Listar Archivos Album", salir},
-												{"Subir Archivo Album", salir},
+												{"Subir Archivo Album", subir_archivo_album},
 												{"Modificar Archivo Album", salir},
 												{"Eliminar Archivo Album", salir},
 												{"Compartir Album Usuario", salir},
@@ -95,11 +103,12 @@ int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 		imprimir_menu(menu_actual, items_menu_actual);
 		opcion = obtener_opcion();
 		mensaje = realizar_operacion(menu_actual, items_menu_actual, opcion, &longitud_mensaje);
-		sendto(sockfd, (void *) mensaje, longitud_mensaje, 0,dir, sa);
-		// TODO: Incorporar la recepcion de una respuesta y analisis de la misma para brindar un mensaje al usuario.
+		if(longitud_mensaje > 0){
+			sendto(sockfd, (void *) mensaje, longitud_mensaje, 0,dir, sa);
 
-		n = recvfrom( sockfd, linea_rcb, MAXLINEA, 0, NULL, NULL );
-		analizar_respuesta(linea_rcb);
+			n = recvfrom( sockfd, linea_rcb, MAXLINEA, 0, NULL, NULL );
+			analizar_respuesta(linea_rcb);
+		}
 	}
 
 	return 0;
@@ -257,4 +266,24 @@ void * eliminar_album(int * longitud){
 	obtener_datos("Ingrese el nombre del album a eliminar\n","%s",nombre_album);
 	return mensaje_solicitud( id_usuario+ '0' , SubOP_Eliminar_album , id_album+'0' , '0' , nombre_album, longitud );
 
+}
+
+
+void * subir_archivo_album(int * longitud){
+	int sockid;
+	BOOLEAN resultado;
+	char ruta[100];
+
+	printf("Ingrese la ruta del archivo que desea subir: ");
+	scanf("%s",ruta);
+
+	sockid = iniciar_cliente_ftp(puerto_cliente, puerto_servidor, direccion);
+
+	*longitud = 0;
+
+	resultado = enviar_archivo(ruta, sockid, id_usuario);
+
+	close(sockid);
+
+	return NULL;
 }

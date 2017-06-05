@@ -75,6 +75,50 @@ BOOLEAN crear_carpeta_general_albumes(void){
 	return FALSE;
 }
 
+char * buscar_album_id(char * usuario, int id_album){
+	FILE * archivo;
+	char album[MAX_NOMBRE_SOLICITUD];
+	int id = -1;
+	char folder [] = "albumes/";
+	char * route = (char *)malloc(strlen(folder)+ strlen(usuario) + strlen("/albumes.txt"));
+	char * respuesta = NULL;
+
+	strcpy(route, folder);
+	strcat(route, usuario);
+	strcat(route, "/albumes.txt");
+
+	archivo = fopen(route, "r");
+
+	if(archivo != NULL){
+		while(fscanf(archivo, "%s", album) > 0){
+			fscanf(archivo, "%d", &id);
+			if(id == id_album){
+				respuesta = (char *)malloc(sizeof(char) * strlen(album));
+				strcpy(respuesta,album);
+				break;
+			}
+		}
+		fclose(archivo);
+	}
+
+	return respuesta;
+}
+
+char * crear_ruta(char * usuario, char * album, char * archivo){
+	char folder [] = "albumes/";
+	int cantidad_barras = 2;
+	char * ruta = (char *)malloc(strlen(folder) + strlen(usuario) + strlen(album) + strlen(archivo) + cantidad_barras);
+
+	strcpy(ruta, folder);
+	strcat(ruta, usuario);
+	strcat(ruta, "/");
+	strcat(ruta, album);
+	strcat(ruta, "/");
+	strcat(ruta, archivo);
+
+	return ruta;
+}
+
 BOOLEAN eliminar_album(char * nombre, char * usuario){
 	char folder [] = "albumes/";
 	char * route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(nombre) + strlen(usuario));

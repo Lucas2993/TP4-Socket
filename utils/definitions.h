@@ -12,8 +12,9 @@ typedef enum boolean{
 	FALSE, TRUE
 }BOOLEAN;
 
-#define MAXLINEA 100
+#define MAXLINEA 512
 #define MAXCLI   10
+#define MAXPATH 100
 
 #define MAX_USUARIO 16
 #define MAX_CLAVE 15
@@ -26,7 +27,7 @@ typedef enum boolean{
 
 #define MAX_NOMBRE_SOLICITUD 59
 
-#define MAX_DATOS 509
+#define MAX_DATOS 502
 
 #define M_INICIAR_SESION 1
 #define M_REGISTRO 2
@@ -87,7 +88,7 @@ typedef struct solicitud{
 typedef struct envio{
 	char OP;
 	char Tipo_Archivo;
-	char Longitud_Datos;
+	int Longitud_Datos;
 	char Datos [MAX_DATOS];
 }ENVIO;
 
