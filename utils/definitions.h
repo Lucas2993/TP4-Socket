@@ -48,6 +48,7 @@ typedef enum boolean{
 #define SubOP_Compartir_album_usuario 9
 #define SubOP_Dejar_compartir_album_usuario 10
 #define SubOP_Listar_usuario 11
+#define SubOP_Descargar_archivo_album 12
 
 typedef struct inciar_sesion{
 	char OP;

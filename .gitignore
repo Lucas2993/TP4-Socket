@@ -2,5 +2,6 @@
 /.project
 client/*.o
 server/*.o
+utils/*.o
 client/client
 server/server

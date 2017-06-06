@@ -273,15 +273,18 @@ void * subir_archivo_album(int * longitud){
 	int sockid;
 	BOOLEAN resultado;
 	char ruta[100];
+	int id_album;
 
 	printf("Ingrese la ruta del archivo que desea subir: ");
 	scanf("%s",ruta);
+	printf("Ingrese el id del album al que desea subirlo\n");
+	scanf("%d", &id_album);
 
 	sockid = iniciar_cliente_ftp(puerto_cliente, puerto_servidor, direccion);
 
 	*longitud = 0;
 
-	resultado = enviar_archivo(ruta, sockid, id_usuario);
+	resultado = subir_archivo(ruta, sockid, id_usuario, id_album);
 
 	close(sockid);
 
