@@ -1,0 +1,37 @@
+
+
+        var element = document.getElementById('popup');
+
+        var popup = new ol.Overlay({
+            element: element,
+            positioning: 'bottom-center',
+            stopEvent: false,
+            offset: [0, -50]
+        });
+        vm.map.addOverlay(popup);
+
+        // display popup on click
+        vm.map.on('click', function(evt) {
+            var feature = vm.map.forEachFeatureAtPixel(evt.pixel,
+                function(feature) {
+                  if (feature) {
+
+                      var coordinates = feature.getGeometry().getCoordinates();
+                      console.log(feature.get('name'));
+                      var name =feature.get('name');
+                      popup.setPosition(coordinates);
+                      // popup.getContent.setValue(name);
+                      $(element).popover({
+                          'placement': 'top',
+                          'html': true,
+                          'content': name.toString(),
+                      });
+                      $(element).popover('show');
+                  } else {
+                      $(element).popover('destroy');
+                  }
+                    return feature;
+                });
+
+        });
+

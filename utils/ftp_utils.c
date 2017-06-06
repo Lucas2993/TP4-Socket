@@ -48,13 +48,13 @@ BOOLEAN enviar_archivo_socket(char * identificador_origen, int socket_id, char *
 
   // Se comienza la transferencia.
   mensaje_envio = (ENVIO *)malloc(sizeof(ENVIO));
-  
+
   mensaje_envio->OP = M_ENVIAR;
   mensaje_envio->Tipo_Archivo = 'A';
 
   // printf("Size of mensaje_envio: %d\n", sizeof(ENVIO));
 
-  for(i= 0; i < num_blks; i ++) { 
+  for(i= 0; i < num_blks; i ++) {
     mensaje_envio->Longitud_Datos = fread(mensaje_envio->Datos,sizeof(char),MAX_DATOS,fp);
     if (mensaje_envio->Longitud_Datos == 0){
       printf("%s: Error leyendo el archivo\n", identificador_origen);
@@ -90,7 +90,7 @@ BOOLEAN enviar_archivo_socket(char * identificador_origen, int socket_id, char *
     }
     printf(" %d...",i);
   }
-                                                  
+
   fclose(fp);
 
   printf("%s: Transferencia completada!\n",identificador_origen);
@@ -175,32 +175,32 @@ BOOLEAN recibir_archivo_socket(char * identificador_origen, int socket_id, char 
 /*
   TO TAKE CARE OF THE POSSIBILITY OF BUFFER LIMMITS IN THE KERNEL FOR THE
  SOCKET BEING REACHED (WHICH MAY CAUSE READ OR WRITE TO RETURN FEWER CHARACTERS
-  THAN REQUESTED), WE USE THE FOLLOWING TWO FUNCTIONS */  
-   
-int readn(int sd,char *ptr,int size){
-  int no_left,no_read;
-  no_left = size;
-  while (no_left > 0){
-    no_read = read(sd,ptr,no_left);
-    if(no_read <0)
-      return(no_read);
-    if(no_read == 0)
-      break;
-    no_left -= no_read;
-    ptr += no_read;
-  }
-  return(size - no_left);
-}
+  THAN REQUESTED), WE USE THE FOLLOWING TWO FUNCTIONS */
 
-int writen(int sd,char *ptr,int size){
-  int no_left,no_written;
-  no_left = size;
-  while (no_left > 0){
-    no_written = write(sd,ptr,no_left);
-    if(no_written <=0)
-      return(no_written);
-    no_left -= no_written;
-    ptr += no_written;
-  }
-  return(size - no_left);
-}
+// int readn(int sd,char *ptr,int size){
+//   int no_left,no_read;
+//   no_left = size;
+//   while (no_left > 0){
+//     no_read = read(sd,ptr,no_left);
+//     if(no_read <0)
+//       return(no_read);
+//     if(no_read == 0)
+//       break;
+//     no_left -= no_read;
+//     ptr += no_read;
+//   }
+//   return(size - no_left);
+// }
+//
+// int writen(int sd,char *ptr,int size){
+//   int no_left,no_written;
+//   no_left = size;
+//   while (no_left > 0){
+//     no_written = write(sd,ptr,no_left);
+//     if(no_written <=0)
+//       return(no_written);
+//     no_left -= no_written;
+//     ptr += no_written;
+//   }
+//   return(size - no_left);
+// }

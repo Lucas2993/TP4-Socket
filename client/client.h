@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "client.h"
 #include "../utils/definitions.h"
 
 
@@ -33,15 +32,8 @@ void * eliminar_album(int *);
 void obtener_datos( char * ouput , char * tipo , void * dato );
 
 void obtener_datos_iniciar_sesion( char * usuario , char * clave );
-void * mensaje_iniciar_sesion(char * usuario , char * clave , int * longitud);
 
 void obtener_datos_registro(char * nombre , char * apellido , char * usuario , char * clave );
-void * mensaje_registro(char * nombre,char * apellido ,char * usuario,char * clave, int * longitud);
-
-
-void * mensaje_cerrar_sesion(char id , int * longitud );
-
-void * mensaje_solicitud(char id_usuario_ , char codigo_Sub_OP , char id_album , char id_archivo ,char * nombre_solicitud, int * longitud );
 
 void * salir(int *);
 
