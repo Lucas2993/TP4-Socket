@@ -18,7 +18,7 @@
 BOOLEAN iniciar_servidor_ftp(int puerto){
 
   int sockid, newsd, pid, clilen = 0;
-  struct sockaddr_in my_addr, client_addr;   
+  struct sockaddr_in my_addr, client_addr;
 
   printf("Servidor TCP: Creando socket\n");
   if ((sockid = socket(AF_INET,SOCK_STREAM,0)) < 0){
@@ -40,14 +40,14 @@ BOOLEAN iniciar_servidor_ftp(int puerto){
   if (listen(sockid,5) < 0){
     printf("Servidor TCP: Error al intentar escuchar: %d\n",errno);
     exit(0);
-  }                                        
+  }
 
-  while(1==1) { 
+  while(1==1) {
     /* ACCEPT A CONNECTION AND THEN CREATE A CHILD TO DO THE WORK */
     /* LOOP BACK AND WAIT FOR ANOTHER CONNECTION                  */
     printf("Servidor TCP: Esperando conexion\n");
     if((newsd = accept(sockid ,(struct sockaddr *) &client_addr,&clilen)) < 0){
-      printf("Servidor TCP: Error de conexion: %d\n", errno); 
+      printf("Servidor TCP: Error de conexion: %d\n", errno);
       exit(0);
     }
     printf("Servidor TCP: Conexion establecida, el socket asignado es el: %d\n",newsd);
@@ -63,7 +63,7 @@ BOOLEAN iniciar_servidor_ftp(int puerto){
     close(newsd);        /* parent all done with client, only child */
   }              /* will communicate with that client from now on */
 }
-     
+
 
 /* CHILD PROCEDURE, WHICH ACTUALLY DOES THE FILE TRANSFER */
 void doftp(int newsd){
@@ -77,7 +77,7 @@ void doftp(int newsd){
   char * album;
   char * archivo;
   char * ruta;
-    
+
   // Se espera un mensaje de solicitud que proporcione el nombre del achivo, el album
   // y el usuario al que pertenece para determinar el destino del archivo a recibir.
 
@@ -105,7 +105,8 @@ void doftp(int newsd){
       // Obtener nombre del album.
       album = buscar_album_id(usuario, mensaje_solicitud->ID_Album);
       // Obtener nombre del archivo.
-      archivo = buscar_archivo_id(usuario, album, mensaje_solicitud->ID_Archivo);
+      // archivo = buscar_archivo_id(usuario, album, mensaje_solicitud->ID_Archivo);
+      
       // Armar ruta completa del archivo a almacenar.
       ruta = crear_ruta(usuario, album, mensaje_solicitud->nombre);
 

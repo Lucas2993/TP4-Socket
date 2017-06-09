@@ -119,8 +119,8 @@ char * crear_ruta(char * usuario, char * album, char * archivo){
 	return ruta;
 }
 
-BOOLEAN eliminar_album(char * nombre, char * usuario){
-	char folder [] = "albumes/";
+BOOLEAN eliminar_album(char * nombre, char * usuario,int id){
+	char folder [] = "rm -R albumes/";
 	char * route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(nombre) + strlen(usuario));
 
 	strcpy(route, folder);
@@ -128,8 +128,46 @@ BOOLEAN eliminar_album(char * nombre, char * usuario){
 	strcat(route, "/");
 	strcat(route, nombre);
 
-	if(remove(route) == 0){
+	if(system(route) == 0){
+		eliminar_album_de_lista(usuario,id);
 		return TRUE;
 	}
 	return FALSE;
+}
+
+BOOLEAN eliminar_album_de_lista( char * usuario, int id_album ){
+	FILE * archivo;
+	FILE * aux;
+	BOOLEAN resultado = FALSE;
+	char album[MAX_NOMBRE_SOLICITUD];
+	int id = -1;
+
+	char folder [] = "albumes/";
+	char * route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(usuario)+ strlen(ARCHIVO_ALBUM ));
+
+	strcpy(route, folder);
+	strcat(route, usuario);
+	strcat(route, "/");
+	strcat(route, ARCHIVO_ALBUM);
+	printf("route : %s\n",route );
+	archivo = fopen(route, "r");
+	aux = fopen(ARCHIVO_AUXILIAR_ALBUM, "w");
+	if(archivo != NULL && aux != NULL){
+		while(fscanf(archivo, "%s", album) > 0){
+			fscanf(archivo, "%d", &id);
+			printf("------------------- %s : %d\n",album,id );
+			if(id != id_album){
+				printf("%s : %d\n",album,id );
+				fprintf(aux, "%s %d\n", album, id);
+			}
+		}
+		fclose(archivo);
+		fclose(aux);
+
+		remove(route);
+		rename(ARCHIVO_AUXILIAR_ALBUM, route);
+		remove(ARCHIVO_AUXILIAR_ALBUM);
+		resultado = TRUE;
+	}
+	return resultado;
 }

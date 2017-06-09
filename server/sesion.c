@@ -53,8 +53,8 @@ int asignar_numero_sesion(void){
 	if(archivo != NULL){
 		while(fscanf(archivo, "%s", usuario) > 0){
 			fscanf(archivo, "%d", &id);
-			if(id > mayor){
 				mayor = id;
+				if(id > mayor){
 			}
 		}
 		fclose(archivo);
@@ -91,7 +91,7 @@ BOOLEAN cerrar_sesion_usuario(int id_usuario){
 	return resultado;
 }
 
-char * buscar_usuario_por_sesion(int id_usuario){
+char * buscar_usuario_por_sesion(int id_usuario	){
 	FILE * archivo;
 	BOOLEAN encontrado = FALSE;
 	char usuario[MAX_USUARIO];

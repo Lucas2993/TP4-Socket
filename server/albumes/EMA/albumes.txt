@@ -1,3 +1,0 @@
-album1 1
-album2 2
-album3 3

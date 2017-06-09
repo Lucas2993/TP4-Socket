@@ -205,9 +205,10 @@ void * crear_album(int * longitud){
 
 void * eliminar_album(int * longitud){
 	int id_album;
-	// obtener_datos("Ingrese el id del album a eliminar\n","%d",&id_album);
+	obtener_datos("Ingrese el id del album a eliminar\n","%d",&id_album);
 	char nombre_album [MAX_NOMBRE_SOLICITUD];
-	obtener_datos("Ingrese el nombre del album a eliminar\n","%s",nombre_album);
+	// obtener_datos("Ingrese el nombre del album a eliminar\n","%s",nombre_album);
+	// return mensaje_solicitud( id_usuario+ '0' , SubOP_Eliminar_album , '0' , '0' , nombre_album, longitud );
 	return mensaje_solicitud( id_usuario+ '0' , SubOP_Eliminar_album , id_album+'0' , '0' , nombre_album, longitud );
 
 }
