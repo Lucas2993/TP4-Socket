@@ -16,7 +16,7 @@
 
 
 #define ITEMS_MENU_PRINCIPAL 3
-#define ITEMS_MENU_SESION 12
+#define ITEMS_MENU_SESION 13
 
 int principal( FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa );
 void analizar_respuesta(char *);
@@ -27,7 +27,9 @@ void * registro(int *);
 
 void * crear_album(int *);
 void * subir_archivo_album(int *);
+void * descargar_archivo_album(int *);
 void * eliminar_album(int *);
+void * listar_albumes(int *);
 
 void obtener_datos( char * ouput , char * tipo , void * dato );
 

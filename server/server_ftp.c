@@ -12,6 +12,7 @@
 #include "../utils/definitions.h"
 #include "../utils/ftp_utils.h"
 #include "album.h"
+#include "archivo.h"
 #include "sesion.h"
 #include "server_ftp.h"
 
@@ -88,32 +89,42 @@ void doftp(int newsd){
 
   if(msg[0] == M_SOLICITUD){
     mensaje_solicitud = (SOLICITUD *)msg;
+    
+    // Obtener nombre usuario.
+    usuario = buscar_usuario_por_sesion(mensaje_solicitud->ID_Usuario);
+    // Obtener nombre del album.
+    album = buscar_album_id(usuario, mensaje_solicitud->ID_Album);
+    
     if(mensaje_solicitud->ID_SUB_OP == SubOP_Subir_archivo_album){
-      // Obtener nombre usuario.
-      usuario = buscar_usuario_por_sesion(mensaje_solicitud->ID_Usuario);
-      // Obtener nombre del album.
-      album = buscar_album_id(usuario, mensaje_solicitud->ID_Album);
-      // Armar ruta completa del archivo a almacenar.
-      ruta = crear_ruta(usuario, album, mensaje_solicitud->nombre);
-
-      printf("%s\n", mensaje_solicitud->nombre);
-      printf("%s\n", ruta);
+      recepcion_archivo(newsd, mensaje_solicitud);
     }
-    else if(mensaje_solicitud->ID_SUB_OP == SubOP_Subir_archivo_album){
-      // Obtener nombre usuario.
-      usuario = buscar_usuario_por_sesion(mensaje_solicitud->ID_Usuario);
-      // Obtener nombre del album.
-      album = buscar_album_id(usuario, mensaje_solicitud->ID_Album);
-      // Obtener nombre del archivo.
-      // archivo = buscar_archivo_id(usuario, album, mensaje_solicitud->ID_Archivo);
-      
-      // Armar ruta completa del archivo a almacenar.
-      ruta = crear_ruta(usuario, album, mensaje_solicitud->nombre);
-
-      printf("%s\n", mensaje_solicitud->nombre);
-      printf("%s\n", ruta);
+    else if(mensaje_solicitud->ID_SUB_OP == SubOP_Descargar_archivo_album){
+      envio_archivo(newsd, mensaje_solicitud);
+    }
+    else if(mensaje_solicitud->ID_SUB_OP == SubOP_Listar_albumes){
+      listar_albumes_usuario(newsd, mensaje_solicitud);
     }
   }
+}
+
+void recepcion_archivo(int socket_id, SOLICITUD * mensaje_solicitud){
+  CONFIRMAR * mensaje_confirmacion;
+  char * usuario;
+  char * album;
+  char * archivo;
+  char * ruta;
+
+  // Obtener nombre usuario.
+  usuario = buscar_usuario_por_sesion(mensaje_solicitud->ID_Usuario);
+  
+  // Obtener nombre del album.
+  album = buscar_album_id(usuario, mensaje_solicitud->ID_Album);
+
+  archivo = (char *)malloc(sizeof(char) * strlen(mensaje_solicitud->nombre));
+  strcpy(archivo, mensaje_solicitud->nombre);
+
+  // Armar ruta completa del archivo a almacenar.
+  ruta = crear_ruta(usuario, album, archivo);
 
   mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
 
@@ -123,14 +134,83 @@ void doftp(int newsd){
   strcpy(mensaje_confirmacion->mensaje, "OK");
 
   // Se envia un mensaje al cliente aceptando el archivo y validando los datos.
-  if((write(newsd,(void *)mensaje_confirmacion,sizeof(CONFIRMAR))) < 0){
+  if((write(socket_id,(void *)mensaje_confirmacion,sizeof(CONFIRMAR))) < 0){
     printf("Servidor TCP: Error al enviar el mensaje de confirmacion de datos: %d\n",errno);
     exit(0);
   }
 
-  recibir_archivo_socket("Servidor TCP", newsd, ruta);
+  if(recibir_archivo_socket("Servidor TCP", socket_id, ruta)){
+    registrar_archivo(archivo, usuario, album);
+  }
 }
 
-void recepcion(int socket_id, int id_usuario, int id_album){
+void envio_archivo(int socket_id, SOLICITUD * mensaje_solicitud){
+  CONFIRMAR * mensaje_confirmacion;
+  char * usuario;
+  char * album;
+  char * archivo;
+  char * ruta;
 
+  // Obtener nombre usuario.
+  usuario = buscar_usuario_por_sesion(mensaje_solicitud->ID_Usuario);
+  
+  // Obtener nombre del album.
+  album = buscar_album_id(usuario, mensaje_solicitud->ID_Album);
+
+  // Obtener nombre del archivo.
+  archivo = buscar_archivo_id(usuario, album, mensaje_solicitud->ID_Archivo);
+
+  // Armar ruta completa del archivo a almacenar.
+  ruta = crear_ruta(usuario, album, archivo);
+
+  mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
+
+  mensaje_confirmacion->OP = M_CONFIRMAR;
+  mensaje_confirmacion->ID_Usuario = mensaje_solicitud->ID_Usuario;
+  mensaje_confirmacion->ID_SUB_OP = mensaje_solicitud->ID_SUB_OP;
+  strcpy(mensaje_confirmacion->mensaje, archivo);
+
+  // Se envia un mensaje al cliente aceptando el archivo y validando los datos.
+  if((write(socket_id,(void *)mensaje_confirmacion,sizeof(CONFIRMAR))) < 0){
+    printf("Servidor TCP: Error al enviar el mensaje de confirmacion de datos: %d\n",errno);
+    exit(0);
+  }
+
+  enviar_archivo_socket("Servidor TCP", socket_id, ruta);
+}
+
+void listar_albumes_usuario(int socket_id, SOLICITUD * mensaje_solicitud){
+  CONFIRMAR * mensaje_confirmacion;
+  char * usuario;
+  char archivo_temporal[MAXPATH];
+  FILE * fp;
+  int i = 1;
+
+  // Obtener nombre usuario.
+  usuario = buscar_usuario_por_sesion(mensaje_solicitud->ID_Usuario);
+
+  mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
+
+  mensaje_confirmacion->OP = M_CONFIRMAR;
+  mensaje_confirmacion->ID_Usuario = mensaje_solicitud->ID_Usuario;
+  mensaje_confirmacion->ID_SUB_OP = mensaje_solicitud->ID_SUB_OP;
+  strcpy(mensaje_confirmacion->mensaje, "OK");
+
+  // Se envia un mensaje al cliente aceptando el archivo y validando los datos.
+  if((write(socket_id,(void *)mensaje_confirmacion,sizeof(CONFIRMAR))) < 0){
+    printf("Servidor TCP: Error al enviar el mensaje de confirmacion de datos: %d\n",errno);
+    exit(0);
+  }
+
+  sprintf(archivo_temporal, "%s%d%s", ARCHIVO_TEMPORAL_BASE, i++, EXTENSION_ARCHIVO_TEMPORAL);
+  while((fp = fopen(archivo_temporal, "w")) == NULL){
+    sprintf(archivo_temporal, "%s%d%s", ARCHIVO_TEMPORAL_BASE, i, EXTENSION_ARCHIVO_TEMPORAL);
+    i++;
+  }
+
+  listar_albumes(fp, usuario);
+
+  enviar_archivo_socket("Servidor TCP", socket_id, archivo_temporal);
+
+  remove(archivo_temporal);
 }

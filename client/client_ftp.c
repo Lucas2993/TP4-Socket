@@ -19,40 +19,39 @@
 #include "../utils/ftp_utils.h"
 #include "client_ftp.h"
 
-int iniciar_cliente_ftp(int puerto_cliente, int puerto_servidor, char * direccion){
+int iniciar_cliente_ftp(int puerto_servidor, char * direccion){
   int sockid, newsockid,i,getfile,ack,msg,msg_2,c,len;
   int no_writen,start_xfer, num_blks,num_last_blk;
   struct sockaddr_in my_addr, server_addr; 
   FILE *fp;
-  char in_buf[MAXSIZE];
   
   no_writen = 0;
   num_blks = 0;
   num_last_blk = 0;
   // len = strlen(path);
-  printf("client: creating socket\n");
+  printf("Cliente: Creando socket\n");
   if((sockid = socket(AF_INET,SOCK_STREAM,0)) < 0){
-    printf("client: socket error : %d\n", errno);
+    printf("Cliente: socket error : %d\n", errno);
     exit(0);
   }
   
-  printf("client: binding my local socket\n");
-  bzero((char *) &my_addr,sizeof(my_addr));
-  my_addr.sin_family = AF_INET;
-  my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  my_addr.sin_port = htons(puerto_cliente);
-  if(bind(sockid ,(struct sockaddr *) &my_addr,sizeof(my_addr)) < 0){
-    printf("client: bind  error :%d\n", errno);
-    exit(0);
-  }
+  // printf("Cliente: Enlazando el socket local\n");
+  // bzero((char *) &my_addr,sizeof(my_addr));
+  // my_addr.sin_family = AF_INET;
+  // my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  // my_addr.sin_port = htons(puerto_cliente);
+  // if(bind(sockid ,(struct sockaddr *) &my_addr,sizeof(my_addr)) < 0){
+  //   printf("Cliente: Error de enlace :%d\n", errno);
+  //   exit(0);
+  // }
                                              
-  printf("client: starting connect\n");
+  printf("Cliente: Empezando conexion\n");
   bzero((char *) &server_addr,sizeof(server_addr));
   server_addr.sin_family = AF_INET;
   server_addr.sin_addr.s_addr = inet_addr(direccion);
   server_addr.sin_port = htons(puerto_servidor);
   if(connect(sockid ,(struct sockaddr *) &server_addr,sizeof(server_addr)) < 0){
-    printf("client: connect  error :%d\n", errno);
+    printf("Cliente: Error de conexion: %d\n", errno);
     exit(0);
   }
 
@@ -95,7 +94,7 @@ BOOLEAN subir_archivo(char * ruta, int sockid, int id_usuario, int id_album){
 
     // Hasta aca llegue que es el momento donde me confirma la recepcion de los
     // datos del archivo.
-    if(strcpy(mensaje_confirmacion->mensaje, "OK"))
+    if(strcmp(mensaje_confirmacion->mensaje, "OK") == 0)
       printf("El servidor ha validado los datos sobre el archivo y su destino\n");
   }
 
@@ -104,34 +103,99 @@ BOOLEAN subir_archivo(char * ruta, int sockid, int id_usuario, int id_album){
 
 
 BOOLEAN descargar_archivo(char * ruta_destino, int sockid, int id_usuario, int id_album, int id_archivo){
-  // SOLICITUD * mensaje_solicitud;
+  SOLICITUD * mensaje_solicitud;
+  CONFIRMAR * mensaje_confirmacion;
+  char msg[MAXLINEA];
+  char * ruta;
 
-  // mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
+  mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
 
-  // mensaje_solicitud->OP = M_SOLICITUD;
-  // mensaje_solicitud->ID_Usuario = id_usuario;
-  // mensaje_solicitud->ID_SUB_OP = SubOP_Descargar_archivo_album;
-  // mensaje_solicitud->ID_Album = id_album;
-  // mensaje_solicitud->ID_Archivo = id_archivo;
+  mensaje_solicitud->OP = M_SOLICITUD;
+  mensaje_solicitud->ID_Usuario = id_usuario;
+  mensaje_solicitud->ID_SUB_OP = SubOP_Descargar_archivo_album;
+  mensaje_solicitud->ID_Album = id_album;
+  mensaje_solicitud->ID_Archivo = id_archivo;
 
-  // if((write(sockid,(void *)mensaje_solicitud,sizeof(SOLICITUD))) < 0){
-  //   printf("client: write  error :%d\n", errno);
-  //   exit(0);
-  // }
+  if((write(sockid,(void *)mensaje_solicitud,sizeof(SOLICITUD))) < 0){
+    printf("client: write  error :%d\n", errno);
+    exit(0);
+  }
 
-  // if((read(sockid,(char *)msg,MAXLINEA))< 0){
-  //   printf("client: read  error :%d\n", errno);
-  //   exit(0);
-  // }
+  if((read(sockid,(char *)msg,MAXLINEA))< 0){
+    printf("client: read  error :%d\n", errno);
+    exit(0);
+  }
 
-  // // TODO reconocimiento de mensajes tanto de confirmacion como de error.
+  // TODO reconocimiento de mensajes tanto de confirmacion como de error.
 
-  // if(msg[0] == M_CONFIRMAR){
-  //   mensaje_confirmacion = (CONFIRMAR *)msg;
+  if(msg[0] == M_CONFIRMAR){
+    mensaje_confirmacion = (CONFIRMAR *)msg;
 
-  //   // Hasta aca llegue que es el momento donde me confirma la recepcion de los
-  //   // datos del archivo.
-  //   if(strcpy(mensaje_confirmacion->mensaje, "OK"))
-  //     printf("El servidor ha validado los datos sobre el archivo y su destino\n");
-  // }
+    // Hasta aca llegue que es el momento donde me confirma la recepcion de los
+    // datos del archivo.
+    ruta = (char *)malloc(strlen(ruta_destino) + strlen("/") + strlen(mensaje_confirmacion->mensaje));
+    strcpy(ruta, ruta_destino);
+    strcat(ruta, "/");
+    strcat(ruta, mensaje_confirmacion->mensaje);
+  }
+
+  return recibir_archivo_socket("Cliente", sockid, ruta);
+}
+
+BOOLEAN listar_albumes_usuario(int sockid, int id_usuario){
+  SOLICITUD * mensaje_solicitud;
+  CONFIRMAR * mensaje_confirmacion;
+  char msg[MAXLINEA];
+  char buffer[MAXLINEA];
+  char * ruta;
+  FILE * fp;
+
+  mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
+
+  mensaje_solicitud->OP = M_SOLICITUD;
+  mensaje_solicitud->ID_Usuario = id_usuario;
+  mensaje_solicitud->ID_SUB_OP = SubOP_Listar_albumes;
+  mensaje_solicitud->ID_Album = 0;
+  mensaje_solicitud->ID_Archivo = 0;
+
+  if((write(sockid,(void *)mensaje_solicitud,sizeof(SOLICITUD))) < 0){
+    printf("client: write  error :%d\n", errno);
+    exit(0);
+  }
+
+  if((read(sockid,(char *)msg,MAXLINEA))< 0){
+    printf("client: read  error :%d\n", errno);
+    exit(0);
+  }
+
+  // TODO reconocimiento de mensajes tanto de confirmacion como de error.
+
+  if(msg[0] == M_CONFIRMAR){
+    mensaje_confirmacion = (CONFIRMAR *)msg;
+
+    // Hasta aca llegue que es el momento donde me confirma la recepcion de los
+    // datos del archivo.
+    ruta = (char *)malloc(strlen(ARCHIVO_TEMPORAL_BASE) + strlen(EXTENSION_ARCHIVO_TEMPORAL));
+    strcpy(ruta, ARCHIVO_TEMPORAL_BASE);
+    strcat(ruta, EXTENSION_ARCHIVO_TEMPORAL);
+  }
+
+  recibir_archivo_socket("Cliente", sockid, ruta);
+
+  if((fp = fopen(ruta, "r")) != NULL){
+    printf("\n");
+    printf("Albumes:\n");
+    bzero(buffer, MAXLINEA);
+    while(fgets(buffer, MAXLINEA, fp) != NULL){
+      printf("%s", buffer);    
+    }
+    if(strlen(buffer) == 0){
+      printf("Usted no tiene albumes registrados.\n");
+    }
+    printf("\n");
+    close(fp);
+    remove(ruta);
+  }
+
+  return TRUE;
 }

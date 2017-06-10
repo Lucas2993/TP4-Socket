@@ -14,7 +14,6 @@
 
 int id_usuario = -1;
 char * direccion;
-int puerto_cliente;
 int puerto_servidor;
 
 int main(int argc, char ** argv) {
@@ -24,15 +23,14 @@ int main(int argc, char ** argv) {
 	/*---------------------------------------------------------------------*
 	 * Verificar los argumentos
 	 *---------------------------------------------------------------------*/
-	if (argc < 5) {
+	if (argc < 4) {
 		printf("Uso: cliente <direccion>\n");
-		printf("     Donde: <direccion> = <ip> <puerto_udp> <puerto_cliente_tcp> <puerto_servidor_tcp>\n");
+		printf("     Donde: <direccion> = <ip> <puerto_udp> <puerto_servidor_tcp>\n");
 		exit(-1);
 	}
 
 	direccion = argv[1];
-	puerto_cliente = atoi(argv[3]);
-	puerto_servidor = atoi(argv[4]);
+	puerto_servidor = atoi(argv[3]);
 
 	/*--------------------------------------------------------------------*
 	 * Establecer la dirección del servidor y conectarse
@@ -71,12 +69,13 @@ int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 														{"Salir", salir}
 													};
 	MENU_ITEM menu_sesion [ITEMS_MENU_SESION] = {
-												{"Listar Album", salir},
+												{"Listar Album", listar_albumes},
 												{"Crear Album", crear_album},
 												{"Modificar Album", salir},
 												{"Eliminar Album", eliminar_album},
 												{"Listar Archivos Album", salir},
 												{"Subir Archivo Album", subir_archivo_album},
+												{"Descargar Archivo Album", descargar_archivo_album},
 												{"Modificar Archivo Album", salir},
 												{"Eliminar Archivo Album", salir},
 												{"Compartir Album Usuario", salir},
@@ -222,14 +221,54 @@ void * subir_archivo_album(int * longitud){
 
 	printf("Ingrese la ruta del archivo que desea subir: ");
 	scanf("%s",ruta);
-	printf("Ingrese el id del album al que desea subirlo\n");
+	printf("Ingrese el id del album al que desea subirlo: ");
 	scanf("%d", &id_album);
 
-	sockid = iniciar_cliente_ftp(puerto_cliente, puerto_servidor, direccion);
+	sockid = iniciar_cliente_ftp(puerto_servidor, direccion);
 
 	*longitud = 0;
 
 	resultado = subir_archivo(ruta, sockid, id_usuario, id_album);
+
+	close(sockid);
+
+	return NULL;
+}
+
+void * descargar_archivo_album(int * longitud){
+	int sockid;
+	BOOLEAN resultado;
+	char ruta[100];
+	int id_album;
+	int id_archivo;
+
+	printf("Ingrese la ruta donde desea almacenar el archivo: ");
+	scanf("%s",ruta);
+	printf("Ingrese el id del album donde se encuentra el archivo: ");
+	scanf("%d", &id_album);
+	printf("Ingrese el id del archivo: ");
+	scanf("%d", &id_archivo);
+
+	sockid = iniciar_cliente_ftp(puerto_servidor, direccion);
+
+	*longitud = 0;
+
+	resultado = descargar_archivo(ruta, sockid, id_usuario, id_album, id_archivo);
+
+	close(sockid);
+
+	return NULL;
+}
+
+void * listar_albumes(int * longitud){
+	int sockid;
+	BOOLEAN resultado;
+
+	sockid = iniciar_cliente_ftp(puerto_servidor, direccion);
+
+	*longitud = 0;
+
+	resultado = listar_albumes_usuario(sockid, id_usuario);
 
 	close(sockid);
 

@@ -245,3 +245,27 @@ void * subOP_eliminar_album( SOLICITUD * solicitud,int * longitud_respuesta){
 		}
 		return mensaje_error(M_ERROR , '0' ,"Error: No se pudo borrar el album", longitud_respuesta);
 }// fin subOP_eliminar_album
+
+
+void * mensaje_error(char codigo_OP , char codigo_Sub_OP ,char * mensaje , int * longitud_respuesta){
+	ERROR * mensaje_error = (ERROR *)malloc(sizeof(ERROR));
+
+	mensaje_error->OP = codigo_OP;
+	mensaje_error->ID_SUB_OP_Fallo = codigo_Sub_OP;
+	strcpy(mensaje_error->mensaje, mensaje);
+
+	*longitud_respuesta = sizeof(ERROR);
+	return (void *) mensaje_error;
+}
+
+void * mensaje_confirmacion(char codigo_OP ,char id_usuario, char codigo_Sub_OP ,char * mensaje , int * longitud_respuesta){
+	CONFIRMAR * mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
+
+	mensaje_confirmacion->OP = codigo_OP;
+	mensaje_confirmacion->ID_Usuario = id_usuario;
+	mensaje_confirmacion->ID_SUB_OP = codigo_Sub_OP;
+	strcpy(mensaje_confirmacion->mensaje, mensaje);
+
+	*longitud_respuesta = sizeof(CONFIRMAR);
+	return (void *) mensaje_confirmacion;
+}

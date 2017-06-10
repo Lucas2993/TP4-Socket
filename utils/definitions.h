@@ -8,9 +8,11 @@
 #ifndef DEFINITIONS_H_
 #define DEFINITIONS_H_
 
-typedef enum boolean{
-	FALSE, TRUE
-}BOOLEAN;
+#define CARPETA_ALBUMES "albumes/"
+#define ARCHIVO_ALBUMES "/albumes.txt"
+#define ARCHIVO_ARCHIVOS "/archivos.txt"
+#define ARCHIVO_TEMPORAL_BASE "temporal"
+#define EXTENSION_ARCHIVO_TEMPORAL ".txt"
 
 #define MAXLINEA 512
 #define MAXCLI   10
@@ -49,6 +51,10 @@ typedef enum boolean{
 #define SubOP_Dejar_compartir_album_usuario 10
 #define SubOP_Listar_usuario 11
 #define SubOP_Descargar_archivo_album 12
+
+typedef enum boolean{
+	FALSE, TRUE
+}BOOLEAN;
 
 typedef struct inciar_sesion{
 	char OP;
