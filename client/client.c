@@ -174,7 +174,7 @@ void analizar_respuesta(char * linea_rcb){
 		mensaje_confirmacion = (CONFIRMAR *)linea_rcb;
 		if(mensaje_confirmacion->ID_Usuario - '0' > 0){
 			id_usuario = mensaje_confirmacion->ID_Usuario - '0';
-			printf("Id de usuario obtenido: %d\n", id_usuario);
+			// printf("Id de usuario obtenido: %d\n", id_usuario);
 		}
 		else{
 			if(mensaje_confirmacion->ID_SUB_OP - '0' == 0){
@@ -184,7 +184,7 @@ void analizar_respuesta(char * linea_rcb){
 		printf("%s\n", mensaje_confirmacion->mensaje);
 		break;
 	default:
-		printf("Error desconocido\n");
+		printf("Cliente: Error desconocido\n");
 		break;
 	}
 
@@ -197,14 +197,14 @@ void * cerrar_sesion(int * longitud){
 void * crear_album(int * longitud){
 	char nombre_album [MAX_NOMBRE_SOLICITUD];
 
-	obtener_datos("Ingrese el nombre del nuevo album\n","%s",nombre_album);
+	obtener_datos("Ingrese el nombre del nuevo album: ","%s",nombre_album);
 	return mensaje_solicitud( id_usuario+ '0' , SubOP_Crear_album , '0' , '0' , nombre_album, longitud );
 
 }
 
 void * eliminar_album(int * longitud){
 	int id_album;
-	obtener_datos("Ingrese el id del album a eliminar\n","%d",&id_album);
+	obtener_datos("Ingrese el id del album a eliminar: ","%d",&id_album);
 	char nombre_album [MAX_NOMBRE_SOLICITUD];
 	// obtener_datos("Ingrese el nombre del album a eliminar\n","%s",nombre_album);
 	// return mensaje_solicitud( id_usuario+ '0' , SubOP_Eliminar_album , '0' , '0' , nombre_album, longitud );

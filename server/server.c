@@ -5,30 +5,36 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include "sesion.h"
 #include "usuario.h"
-#include "../utils/definitions.h"
 #include "../utils/mensajes_utils.h"
+#include "../utils/definitions.h"
 #include "album.h"
+#include "server_ftp.h"
 #include "server.h"
 
 void main(int argc, char *argv[]) {
 	int descriptor;
 	struct sockaddr_in dir_srv, dir_cli;
+	int puerto_transferencia;
+	int pid;
 
 	/*---------------------------------------------------------------------*
 	 * Verificar los argumentos recibidos								   *
 	 *---------------------------------------------------------------------*/
-	if (argc < 2) {
-		printf("Uso: servidor <puerto>\n");
+	if (argc < 3) {
+		printf("Uso: servidor <puerto> <puerto_transferencia>\n");
 		exit(-1);
 	}
+
+	puerto_transferencia = atoi(argv[2]);
 
 	/*--------------------------------------------------------------------*
 	 * Inicializar el servidor                               			  *
 	 *--------------------------------------------------------------------*/
 	if ((descriptor = socket( AF_INET, SOCK_DGRAM, 0)) < 0) {
-		perror("ERROR SOCKET: ");
+		printf("Servidor UDP: Error creando el socket: %d\n", errno);
 		exit(-1);
 	}
 
@@ -38,12 +44,17 @@ void main(int argc, char *argv[]) {
 	dir_srv.sin_port = htons(atoi(argv[1]));
 
 	if (bind(descriptor, (struct sockaddr *) &dir_srv, sizeof(dir_srv)) < 0) {
-		perror("ERROR BIND: ");
+		printf("Servidor UDP: Error al crear el enlace: %d\n", errno);
 		exit(-1);
 	}
-	printf("Servidor inicializado.\n\n");
+	printf("Servidor UDP: Servidor iniciado.\n");
 
-	procesar(descriptor, (struct sockaddr *) &dir_cli, sizeof(dir_cli));
+	pid = fork();
+
+	if(pid == 0)
+		iniciar_servidor_ftp(puerto_transferencia);
+	else
+		procesar(descriptor, (struct sockaddr *) &dir_cli, sizeof(dir_cli));
 
 }
 
@@ -60,7 +71,6 @@ void procesar(int descriptor, struct sockaddr *dir_cli_p, socklen_t longcli) {
 	void* respuesta;
 
 	crear_carpeta_general_albumes();
-
 
 	for (;;) {
 		longitud = longcli;
@@ -107,23 +117,23 @@ void * iniciar_sesion(char * mensaje, int * longitud_respuesta) {
 
 	// Si el usuario no existe
 	if(usuario == NULL){
-		printf("Error: El usuario especificado no existe!\n");
+		printf("Servidor UDP: Error: El usuario %s no existe!\n", iniciar_sesion->usuario);
 		return mensaje_error(M_ERROR , '0' ,"Error: El usuario especificado no existe!", longitud_respuesta);
 	}
-		printf("Usuario encontrado: %s y %s\n", usuario->usuario, usuario->clave);
+	// printf("Usuario encontrado: %s y %s\n", usuario->usuario, usuario->clave);
 
-		//Si la contraseña es incorrecta
-		if(strcmp(iniciar_sesion->clave, usuario->clave) != 0){
-			printf("Error: Contraseña incorrecta!\n");
-			return mensaje_error(M_ERROR , '0' ,"Error: Contraseña incorrecta!", longitud_respuesta);
-		}
-		// Si no hubo error se inicia la sesion.
-		numero_sesion = buscar_sesion_por_usuario(usuario->usuario);
-		if(numero_sesion < 0){
-			numero_sesion = asignar_numero_sesion();
-			agregar_sesion(usuario->usuario, numero_sesion);
-		}
-		return mensaje_confirmacion(M_CONFIRMAR ,numero_sesion+'0', '0' , "Sesion iniciada correctamente!" , longitud_respuesta);
+	//Si la contraseña es incorrecta
+	if(strcmp(iniciar_sesion->clave, usuario->clave) != 0){
+		printf("Servidor UDP: Error: El usuario %s ha ingresado una contraseña no valida.\n", usuario->usuario);
+		return mensaje_error(M_ERROR , '0' ,"Error: Contraseña incorrecta!", longitud_respuesta);		}
+	// Si no hubo error se inicia la sesion.
+	numero_sesion = buscar_sesion_por_usuario(usuario->usuario);
+	if(numero_sesion < 0){
+		numero_sesion = asignar_numero_sesion();
+		agregar_sesion(usuario->usuario, numero_sesion);
+	}
+	printf("Servidor UDP: El usuario %s ha iniciado sesion.\n", usuario->usuario);
+	return mensaje_confirmacion(M_CONFIRMAR ,numero_sesion+'0', '0' , "Sesion iniciada correctamente!" , longitud_respuesta);
 }
 
 
@@ -139,16 +149,17 @@ void * registrar(char * mensaje, int * longitud_respuesta) {
 
 	// Si el usuario ya existe , no debe crearlo
 	if(usuario != NULL){
-			printf("Usuario ya existente\n");
+			printf("Servidor UDP: Usuario ya existente\n");
 			return mensaje_error(M_ERROR , '0' ,"Error: El usuario especificado ya existe!", longitud_respuesta);
 	}
-		// Intenta agregar al usuario.
-		usuario_esta_agregado = agregar_usuario(registro->usuario, registro->clave, registro->nombre_completo, registro->apellido);
-		// Si el archivo no pudo ser accedido.
-		if( !usuario_esta_agregado ){
-			return mensaje_error(M_ERROR , '0' ,"Error: El archivo usuarios.txt no pudo ser abiero", longitud_respuesta);
-		}
-		return mensaje_confirmacion(M_CONFIRMAR ,'0', '0' , "Usuario registrado correctamente!" , longitud_respuesta);
+	// Intenta agregar al usuario.
+	usuario_esta_agregado = agregar_usuario(registro->usuario, registro->clave, registro->nombre_completo, registro->apellido);
+	// Si el archivo no pudo ser accedido.
+	if( !usuario_esta_agregado ){
+		return mensaje_error(M_ERROR , '0' ,"Error: El archivo usuarios.txt no pudo ser abierto", longitud_respuesta);
+	}
+	printf("Servidor UDP: Se ha registrado un nuevo usuario llamado: %s %s\n", registro->nombre_completo, registro->apellido);
+	return mensaje_confirmacion(M_CONFIRMAR ,'0', '0' , "Usuario registrado correctamente!" , longitud_respuesta);
 }
 
 
@@ -168,16 +179,17 @@ void * solicitud(char * mensaje, int * longitud_respuesta){
 	case SubOP_Listar_albumes:
 		break;
 	case SubOP_Crear_album:
-			return subOP_crear_album(solicitud,longitud_respuesta);
+		return subOP_crear_album(solicitud,longitud_respuesta);
 		break;
 	case SubOP_Modificar_album:
 		break;
 	case SubOP_Eliminar_album:
-			return subOP_eliminar_album( solicitud,longitud_respuesta );
+		return subOP_eliminar_album( solicitud,longitud_respuesta );
 		break;
 	case SubOP_Listar_archivos_album:
 		break;
 	case SubOP_Subir_archivo_album:
+
 		break;
 	case SubOP_Modificar_archivo_album:
 		break;
@@ -202,17 +214,18 @@ void * solicitud(char * mensaje, int * longitud_respuesta){
 void * cerrar_sesion(char * mensaje, int * longitud_respuesta) {
 	CERRAR_SESION *cerrar_sesion = (CERRAR_SESION *) mensaje;
 	BOOLEAN usuario_cerro_sesion;
+	char * nombre_usuario;
 
+	nombre_usuario = buscar_usuario_por_sesion(cerrar_sesion->ID_Usuario - '0');
 	usuario_cerro_sesion = cerrar_sesion_usuario(cerrar_sesion->ID_Usuario - '0');
 
 	// Si el usuario no pudo cerrar sesion
 	if(!usuario_cerro_sesion ){
-			return mensaje_error(M_ERROR , '0' ,"Error: No se pudo cerrar la sesion", longitud_respuesta);
+		return mensaje_error(M_ERROR , '0' ,"Error: No se pudo cerrar la sesion", longitud_respuesta);
 	}
+	printf("Servidor UDP: El usuario %s ha cerrado sesion.\n", nombre_usuario);
 	return mensaje_confirmacion(M_CONFIRMAR ,'0', '0' , "Sesion cerrada correctamente!", longitud_respuesta);
 }
-
-
 
 /*--------------------------------------------------------------------*
  * Crear un album 							 								 	                   *
@@ -245,27 +258,3 @@ void * subOP_eliminar_album( SOLICITUD * solicitud,int * longitud_respuesta){
 		}
 		return mensaje_error(M_ERROR , '0' ,"Error: No se pudo borrar el album", longitud_respuesta);
 }// fin subOP_eliminar_album
-
-
-void * mensaje_error(char codigo_OP , char codigo_Sub_OP ,char * mensaje , int * longitud_respuesta){
-	ERROR * mensaje_error = (ERROR *)malloc(sizeof(ERROR));
-
-	mensaje_error->OP = codigo_OP;
-	mensaje_error->ID_SUB_OP_Fallo = codigo_Sub_OP;
-	strcpy(mensaje_error->mensaje, mensaje);
-
-	*longitud_respuesta = sizeof(ERROR);
-	return (void *) mensaje_error;
-}
-
-void * mensaje_confirmacion(char codigo_OP ,char id_usuario, char codigo_Sub_OP ,char * mensaje , int * longitud_respuesta){
-	CONFIRMAR * mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
-
-	mensaje_confirmacion->OP = codigo_OP;
-	mensaje_confirmacion->ID_Usuario = id_usuario;
-	mensaje_confirmacion->ID_SUB_OP = codigo_Sub_OP;
-	strcpy(mensaje_confirmacion->mensaje, mensaje);
-
-	*longitud_respuesta = sizeof(CONFIRMAR);
-	return (void *) mensaje_confirmacion;
-}
