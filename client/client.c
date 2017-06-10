@@ -73,7 +73,7 @@ int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 												{"Crear Album", crear_album},
 												{"Modificar Album", salir},
 												{"Eliminar Album", eliminar_album},
-												{"Listar Archivos Album", salir},
+												{"Listar Archivos Album", listar_archivos},
 												{"Subir Archivo Album", subir_archivo_album},
 												{"Descargar Archivo Album", descargar_archivo_album},
 												{"Modificar Archivo Album", salir},
@@ -269,6 +269,25 @@ void * listar_albumes(int * longitud){
 	*longitud = 0;
 
 	resultado = listar_albumes_usuario(sockid, id_usuario);
+
+	close(sockid);
+
+	return NULL;
+}
+
+void * listar_archivos(int * longitud){
+	int sockid;
+	BOOLEAN resultado;
+	int id_album;
+
+	printf("Ingrese el id del album: ");
+	scanf("%d", &id_album);
+
+	sockid = iniciar_cliente_ftp(puerto_servidor, direccion);
+
+	*longitud = 0;
+
+	resultado = listar_archivos_usuario(sockid, id_usuario, id_album);
 
 	close(sockid);
 

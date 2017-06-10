@@ -30,6 +30,7 @@ void * subir_archivo_album(int *);
 void * descargar_archivo_album(int *);
 void * eliminar_album(int *);
 void * listar_albumes(int *);
+void * listar_archivos(int *);
 
 void obtener_datos( char * ouput , char * tipo , void * dato );
 

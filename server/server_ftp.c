@@ -104,6 +104,9 @@ void doftp(int newsd){
     else if(mensaje_solicitud->ID_SUB_OP == SubOP_Listar_albumes){
       listar_albumes_usuario(newsd, mensaje_solicitud);
     }
+    else if(mensaje_solicitud->ID_SUB_OP == SubOP_Listar_archivos_album){
+      listar_archivos_album_usuario(newsd, mensaje_solicitud);
+    }
   }
 }
 
@@ -209,6 +212,46 @@ void listar_albumes_usuario(int socket_id, SOLICITUD * mensaje_solicitud){
   }
 
   listar_albumes(fp, usuario);
+
+  enviar_archivo_socket("Servidor TCP", socket_id, archivo_temporal);
+
+  remove(archivo_temporal);
+}
+
+void listar_archivos_album_usuario(int socket_id, SOLICITUD * mensaje_solicitud){
+  CONFIRMAR * mensaje_confirmacion;
+  char * usuario;
+  char * album;
+  char archivo_temporal[MAXPATH];
+  FILE * fp;
+  int i = 1;
+
+  // Obtener nombre usuario.
+  usuario = buscar_usuario_por_sesion(mensaje_solicitud->ID_Usuario);
+
+  // Obtener nombre del album.
+  album = buscar_album_id(usuario, mensaje_solicitud->ID_Album);
+
+  mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
+
+  mensaje_confirmacion->OP = M_CONFIRMAR;
+  mensaje_confirmacion->ID_Usuario = mensaje_solicitud->ID_Usuario;
+  mensaje_confirmacion->ID_SUB_OP = mensaje_solicitud->ID_SUB_OP;
+  strcpy(mensaje_confirmacion->mensaje, "OK");
+
+  // Se envia un mensaje al cliente aceptando el archivo y validando los datos.
+  if((write(socket_id,(void *)mensaje_confirmacion,sizeof(CONFIRMAR))) < 0){
+    printf("Servidor TCP: Error al enviar el mensaje de confirmacion de datos: %d\n",errno);
+    exit(0);
+  }
+
+  sprintf(archivo_temporal, "%s%d%s", ARCHIVO_TEMPORAL_BASE, i++, EXTENSION_ARCHIVO_TEMPORAL);
+  while((fp = fopen(archivo_temporal, "w")) == NULL){
+    sprintf(archivo_temporal, "%s%d%s", ARCHIVO_TEMPORAL_BASE, i, EXTENSION_ARCHIVO_TEMPORAL);
+    i++;
+  }
+
+  listar_archivos(fp, usuario, album);
 
   enviar_archivo_socket("Servidor TCP", socket_id, archivo_temporal);
 

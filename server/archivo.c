@@ -100,3 +100,33 @@ BOOLEAN eliminar_archivo(char * nombre, char * usuario, char * album){
 	}
 	return FALSE;
 }
+
+BOOLEAN listar_archivos(FILE * fp, char * usuario, char * album){
+	FILE * archivo_archivos;
+	char archivo[MAX_NOMBRE_SOLICITUD];
+	int id = -1;
+	char folder [] = CARPETA_ALBUMES;
+	int cantidad_barras = 1;
+	char * route = (char *)malloc(strlen(folder)+ strlen(usuario) + (sizeof(char) * cantidad_barras) + strlen(album) + strlen(ARCHIVO_ARCHIVOS));
+	BOOLEAN respuesta = TRUE;
+
+	strcpy(route, folder);
+	strcat(route, usuario);
+	strcat(route, "/");
+	strcat(route, album);
+	strcat(route, ARCHIVO_ARCHIVOS);
+
+	archivo_archivos = fopen(route, "r");
+
+	if(archivo_archivos != NULL){
+		while(fscanf(archivo_archivos, "%s", archivo) > 0){
+			fscanf(archivo_archivos, "%d", &id);
+			fprintf(fp, "%d - %s\n", id, archivo);
+		}
+		fclose(archivo_archivos);
+	}
+
+	fclose(fp);
+
+	return respuesta;
+}
