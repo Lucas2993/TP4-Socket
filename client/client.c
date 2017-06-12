@@ -71,13 +71,13 @@ int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 	MENU_ITEM menu_sesion [ITEMS_MENU_SESION] = {
 												{"Listar Album", listar_albumes},
 												{"Crear Album", crear_album},
-												{"Modificar Album", salir},
+												{"Modificar Album", modificar_album},
 												{"Eliminar Album", eliminar_album},
 												{"Listar Archivos Album", listar_archivos},
 												{"Subir Archivo Album", subir_archivo_album},
 												{"Descargar Archivo Album", descargar_archivo_album},
 												{"Modificar Archivo Album", salir},
-												{"Eliminar Archivo Album", salir},
+												{"Eliminar Archivo Album", eliminar_archivo},
 												{"Compartir Album Usuario", salir},
 												{"Dejar Compartir Album Usuario", salir},
 												{"Listar Usuarios", salir},
@@ -216,7 +216,7 @@ void * eliminar_album(int * longitud){
 void * subir_archivo_album(int * longitud){
 	int sockid;
 	BOOLEAN resultado;
-	char ruta[100];
+	char ruta[MAXPATH];
 	int id_album;
 
 	printf("Ingrese la ruta del archivo que desea subir: ");
@@ -238,7 +238,7 @@ void * subir_archivo_album(int * longitud){
 void * descargar_archivo_album(int * longitud){
 	int sockid;
 	BOOLEAN resultado;
-	char ruta[100];
+	char ruta[MAXPATH];
 	int id_album;
 	int id_archivo;
 
@@ -292,4 +292,38 @@ void * listar_archivos(int * longitud){
 	close(sockid);
 
 	return NULL;
+}
+
+void * modificar_album(int * longitud){
+	SOLICITUD * mensaje_solicitud;
+	int id_album;
+	char nombre[MAX_NOMBRE_SOLICITUD];
+
+	printf("Ingrese el id del album a modificar: ");
+	scanf("%d", &id_album);
+	printf("Ingrese el nuevo nombre para el album: ");
+	scanf("%s", nombre);
+
+	mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
+
+	mensaje_solicitud->OP = M_SOLICITUD;
+	mensaje_solicitud->ID_Usuario = id_usuario;
+	mensaje_solicitud->ID_SUB_OP = SubOP_Modificar_album;
+	mensaje_solicitud->ID_Album = id_album;
+	mensaje_solicitud->ID_Archivo = 0;
+	strcpy(mensaje_solicitud->nombre, nombre);
+
+	*longitud = sizeof(SOLICITUD);
+
+	return (void *)mensaje_solicitud;
+}
+
+void * eliminar_archivo(int * longitud){
+	int id_album;
+	int id_archivo;
+
+	obtener_datos("Ingrese el id del album donde se encuentra el archivo: ","%d",&id_album);
+	obtener_datos("Ingrese el id del archivo: ","%d",&id_archivo);
+
+	return mensaje_solicitud(id_usuario, SubOP_Eliminar_archivo_album , id_album, id_archivo, "", longitud);
 }

@@ -198,3 +198,64 @@ BOOLEAN listar_albumes(FILE * fp, char * usuario){
 
 	return respuesta;
 }
+
+BOOLEAN renombrar_album(char * usuario, char * nombre_actual, char * nuevo_nombre){
+	char folder [] = CARPETA_ALBUMES;
+	char * old_route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(nombre_actual) + strlen(usuario));
+	char * new_route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(nuevo_nombre) + strlen(usuario));
+
+	strcpy(old_route, folder);
+	strcat(old_route, usuario);
+	strcat(old_route, "/");
+	strcat(old_route, nombre_actual);
+
+	strcpy(new_route, folder);
+	strcat(new_route, usuario);
+	strcat(new_route, "/");
+	strcat(new_route, nuevo_nombre);
+
+	if(rename(old_route, new_route) == 0){
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOLEAN renombrar_album_registro(char * usuario, int id_album, char * nuevo_nombre){
+	FILE * archivo;
+	FILE * archivo_auxiliar;
+	char album[MAX_NOMBRE_SOLICITUD];
+	int id = -1;
+	char folder [] = CARPETA_ALBUMES;
+	char * route = (char *)malloc(strlen(folder)+ strlen(usuario) + strlen(ARCHIVO_ALBUMES));
+	char * route_aux = (char *)malloc(strlen(folder)+ strlen(usuario) + strlen(ARCHIVO_AUXILIAR_ALBUM));
+
+	strcpy(route, folder);
+	strcat(route, usuario);
+	strcat(route, ARCHIVO_ALBUMES);
+
+	strcpy(route_aux, folder);
+	strcat(route_aux, usuario);
+	strcat(route_aux, ARCHIVO_AUXILIAR_ALBUM);
+
+	archivo = fopen(route, "r");
+	archivo_auxiliar = fopen(route_aux, "w");
+
+	if(archivo != NULL && archivo_auxiliar != NULL){
+		while(fscanf(archivo, "%s", album) > 0){
+			fscanf(archivo, "%d", &id);
+			if(id == id_album){
+				fprintf(archivo_auxiliar, "%s %d\n", nuevo_nombre, id);
+			}
+			else{
+				fprintf(archivo_auxiliar, "%s %d\n", album, id);
+			}
+		}
+		fclose(archivo);
+		fclose(archivo_auxiliar);
+	}
+
+	remove(route);
+	rename(route_aux,route);
+
+	return TRUE;
+}

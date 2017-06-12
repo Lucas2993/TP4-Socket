@@ -34,16 +34,6 @@ int iniciar_cliente_ftp(int puerto_servidor, char * direccion){
     printf("Cliente: socket error : %d\n", errno);
     exit(0);
   }
-  
-  // printf("Cliente: Enlazando el socket local\n");
-  // bzero((char *) &my_addr,sizeof(my_addr));
-  // my_addr.sin_family = AF_INET;
-  // my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  // my_addr.sin_port = htons(puerto_cliente);
-  // if(bind(sockid ,(struct sockaddr *) &my_addr,sizeof(my_addr)) < 0){
-  //   printf("Cliente: Error de enlace :%d\n", errno);
-  //   exit(0);
-  // }
                                              
   printf("Cliente: Empezando conexion\n");
   bzero((char *) &server_addr,sizeof(server_addr));
@@ -242,7 +232,7 @@ BOOLEAN listar_archivos_usuario(int sockid, int id_usuario, int id_album){
 
   if((fp = fopen(ruta, "r")) != NULL){
     printf("\n");
-    printf("Archivo:\n");
+    printf("Archivos:\n");
     bzero(buffer, MAXLINEA);
     while(fgets(buffer, MAXLINEA, fp) != NULL){
       printf("%s", buffer);    

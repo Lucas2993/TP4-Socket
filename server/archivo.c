@@ -130,3 +130,48 @@ BOOLEAN listar_archivos(FILE * fp, char * usuario, char * album){
 
 	return respuesta;
 }
+
+BOOLEAN eliminar_archivo_de_lista(char * usuario, char * album, int id_archivo){
+	FILE * archivo_archivos;
+	FILE * aux;
+	BOOLEAN resultado = FALSE;
+	char archivo[MAX_NOMBRE_SOLICITUD];
+	int id = -1;
+
+	char folder [] = CARPETA_ALBUMES;
+	char * route = (char *)malloc(strlen(folder) + strlen("/") + strlen(usuario)+ strlen(album)+ strlen(ARCHIVO_ARCHIVOS));
+	char * route_aux = (char *)malloc(strlen(folder) + strlen("/") + strlen(usuario) + strlen(album) + strlen(ARCHIVO_AUXILIAR_ARCHIVOS));
+
+	strcpy(route, folder);
+	strcat(route, usuario);
+	strcat(route, "/");
+	strcat(route, album);
+	strcat(route, ARCHIVO_ARCHIVOS);
+
+	strcpy(route_aux, folder);
+	strcat(route_aux, usuario);
+	strcat(route_aux, "/");
+	strcat(route_aux, album);
+	strcat(route_aux, "/");
+	strcat(route_aux, ARCHIVO_AUXILIAR_ARCHIVOS);
+
+
+	archivo_archivos = fopen(route, "r");
+	aux = fopen(route_aux, "w");
+	if(archivo_archivos != NULL && aux != NULL){
+		while(fscanf(archivo_archivos, "%s", archivo) > 0){
+			fscanf(archivo_archivos, "%d", &id);
+			if(id != id_archivo){
+				fprintf(aux, "%s %d\n", archivo, id);
+			}
+		}
+		fclose(archivo_archivos);
+		fclose(aux);
+
+		remove(route);
+		rename(route_aux, route);
+
+		resultado = TRUE;
+	}
+	return resultado;
+}

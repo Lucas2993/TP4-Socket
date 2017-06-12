@@ -10,3 +10,5 @@ char * crear_ruta(char *, char *, char *);
 BOOLEAN eliminar_album(char * nombre, char * usuario,int id);
 BOOLEAN eliminar_album_de_lista( char * usuario, int id_album );
 BOOLEAN listar_albumes(FILE *, char *);
+BOOLEAN renombrar_album(char *, char *, char *);
+BOOLEAN renombrar_album_registro(char *, int, char *);

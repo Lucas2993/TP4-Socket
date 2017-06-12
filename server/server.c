@@ -11,6 +11,7 @@
 #include "../utils/mensajes_utils.h"
 #include "../utils/definitions.h"
 #include "album.h"
+#include "archivo.h"
 #include "server_ftp.h"
 #include "server.h"
 
@@ -170,7 +171,7 @@ void * solicitud(char * mensaje, int * longitud_respuesta){
 	SOLICITUD * solicitud = (SOLICITUD *)mensaje;
 
 	// TODO Verificar que no esta al pedo
-	if(!validar_usuario( solicitud->ID_Usuario - '0' ) ){
+	if(!validar_usuario( solicitud->ID_Usuario) ){
 			return mensaje_error(M_ERROR , '0' ,"Error: Usuario invalido", longitud_respuesta);
 	}
 
@@ -182,6 +183,7 @@ void * solicitud(char * mensaje, int * longitud_respuesta){
 		return subOP_crear_album(solicitud,longitud_respuesta);
 		break;
 	case SubOP_Modificar_album:
+		return modificar_album(solicitud, longitud_respuesta);
 		break;
 	case SubOP_Eliminar_album:
 		return subOP_eliminar_album( solicitud,longitud_respuesta );
@@ -189,11 +191,11 @@ void * solicitud(char * mensaje, int * longitud_respuesta){
 	case SubOP_Listar_archivos_album:
 		break;
 	case SubOP_Subir_archivo_album:
-
 		break;
 	case SubOP_Modificar_archivo_album:
 		break;
 	case SubOP_Eliminar_archivo_album:
+		return subOP_eliminar_archivo(solicitud, longitud_respuesta);
 		break;
 	case SubOP_Compartir_album_usuario:
 		break;
@@ -245,16 +247,76 @@ void * subOP_crear_album( SOLICITUD * solicitud , int * longitud_respuesta ){
 
 void * subOP_eliminar_album( SOLICITUD * solicitud,int * longitud_respuesta){
 	char * nombre_usuario;
-		nombre_usuario = buscar_usuario_por_sesion(solicitud->ID_Usuario - '0');
-		printf("album_id : %d\n",  solicitud->ID_Album - '0' );
-		char * nombre_album = buscar_album_id(nombre_usuario, solicitud->ID_Album - '0');
+	nombre_usuario = buscar_usuario_por_sesion(solicitud->ID_Usuario - '0');
+	printf("album_id : %d\n",  solicitud->ID_Album - '0' );
+	char * nombre_album = buscar_album_id(nombre_usuario, solicitud->ID_Album - '0');
 
-		if(eliminar_album(nombre_album, nombre_usuario, solicitud->ID_Album - '0') ){
-				printf("album %s eliminado \n",nombre_album );
-				// eliminar_album_de_lista( solicitud->ID_Album - '0');
-				printf("elimino album con id %d\n", solicitud->ID_Album - '0' );
+	if(eliminar_album(nombre_album, nombre_usuario, solicitud->ID_Album - '0') ){
+		printf("album %s eliminado \n",nombre_album );
+		// eliminar_album_de_lista( solicitud->ID_Album - '0');
+		printf("elimino album con id %d\n", solicitud->ID_Album - '0' );
 
-				return mensaje_confirmacion(M_CONFIRMAR ,solicitud->ID_Usuario, SubOP_Eliminar_album , "Album borrado correctamente!", longitud_respuesta);
-		}
-		return mensaje_error(M_ERROR , '0' ,"Error: No se pudo borrar el album", longitud_respuesta);
+		return mensaje_confirmacion(M_CONFIRMAR ,solicitud->ID_Usuario, SubOP_Eliminar_album , "Album borrado correctamente!", longitud_respuesta);
+	}
+	return mensaje_error(M_ERROR , '0' ,"Error: No se pudo borrar el album", longitud_respuesta);
 }// fin subOP_eliminar_album
+
+
+void * modificar_album(SOLICITUD * solicitud, int * longitud_respuesta){
+	CONFIRMAR * mensaje_confirmacion;
+	ERROR * mensaje_error;
+
+	char * nombre_actual;
+	char * usuario;
+
+	usuario = buscar_usuario_por_sesion(solicitud->ID_Usuario);
+
+	nombre_actual = buscar_album_id(usuario, solicitud->ID_Album);
+
+	printf("Control\n");
+
+	mensaje_error = (ERROR *)malloc(sizeof(ERROR));
+	if(renombrar_album(usuario, nombre_actual, solicitud->nombre)){
+		if(renombrar_album_registro(usuario, solicitud->ID_Album, solicitud->nombre)){
+			mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
+
+			mensaje_confirmacion->OP = M_CONFIRMAR;
+			mensaje_confirmacion->ID_Usuario = solicitud->ID_Usuario;
+			mensaje_confirmacion->ID_SUB_OP = solicitud->ID_SUB_OP;
+			strcpy(mensaje_confirmacion->mensaje, "El album ha sido renombrado correctamente!");
+
+			*longitud_respuesta = sizeof(CONFIRMAR);
+
+			return (void *)mensaje_confirmacion;
+		}
+		else{
+			strcpy(mensaje_error->mensaje, "Error al renombrar el album en el registro.");	
+		}
+	}
+	else{
+		strcpy(mensaje_error->mensaje, "Error al renombrar el album solicitado.");
+	}
+	
+	mensaje_error->OP = M_ERROR;
+	mensaje_error->ID_SUB_OP_Fallo = solicitud->ID_SUB_OP;
+	*longitud_respuesta = sizeof(ERROR);
+
+	return (void *)mensaje_error;
+}
+
+void * subOP_eliminar_archivo( SOLICITUD * solicitud,int * longitud_respuesta){
+	char * usuario;
+	char * album;
+	char * archivo;
+	
+	usuario = buscar_usuario_por_sesion(solicitud->ID_Usuario);
+	album = buscar_album_id(usuario, solicitud->ID_Album);
+	archivo = buscar_archivo_id(usuario, album, solicitud->ID_Archivo);
+
+	if(eliminar_archivo(archivo, usuario, album)){
+		if(eliminar_archivo_de_lista(usuario, album, solicitud->ID_Archivo)){
+			return mensaje_confirmacion(M_CONFIRMAR ,solicitud->ID_Usuario, SubOP_Eliminar_album , "Archivo borrado correctamente!", longitud_respuesta);
+		}
+	}
+	return mensaje_error(M_ERROR , '0' ,"Error: No se pudo borrar el archivo", longitud_respuesta);
+}

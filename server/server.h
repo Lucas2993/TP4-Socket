@@ -24,4 +24,8 @@ void * subOP_crear_album( SOLICITUD * ,int * );
 
 void * subOP_eliminar_album( SOLICITUD *,int * );
 
+void * modificar_album(SOLICITUD *, int *);
+
+void * subOP_eliminar_archivo( SOLICITUD *,int *);
+
 #endif /* SERVER_SERVER_H_ */
