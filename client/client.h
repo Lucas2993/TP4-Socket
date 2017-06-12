@@ -33,6 +33,7 @@ void * listar_albumes(int *);
 void * listar_archivos(int *);
 void * modificar_album(int *);
 void * eliminar_archivo(int *);
+void * modificar_archivo(int *);
 
 void obtener_datos( char * ouput , char * tipo , void * dato );
 

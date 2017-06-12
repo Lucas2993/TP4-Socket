@@ -193,6 +193,7 @@ void * solicitud(char * mensaje, int * longitud_respuesta){
 	case SubOP_Subir_archivo_album:
 		break;
 	case SubOP_Modificar_archivo_album:
+		return modificar_archivo(solicitud, longitud_respuesta);
 		break;
 	case SubOP_Eliminar_archivo_album:
 		return subOP_eliminar_archivo(solicitud, longitud_respuesta);
@@ -273,8 +274,6 @@ void * modificar_album(SOLICITUD * solicitud, int * longitud_respuesta){
 
 	nombre_actual = buscar_album_id(usuario, solicitud->ID_Album);
 
-	printf("Control\n");
-
 	mensaje_error = (ERROR *)malloc(sizeof(ERROR));
 	if(renombrar_album(usuario, nombre_actual, solicitud->nombre)){
 		if(renombrar_album_registro(usuario, solicitud->ID_Album, solicitud->nombre)){
@@ -319,4 +318,54 @@ void * subOP_eliminar_archivo( SOLICITUD * solicitud,int * longitud_respuesta){
 		}
 	}
 	return mensaje_error(M_ERROR , '0' ,"Error: No se pudo borrar el archivo", longitud_respuesta);
+}
+
+void * modificar_archivo(SOLICITUD * solicitud, int * longitud_respuesta){
+	CONFIRMAR * mensaje_confirmacion;
+	ERROR * mensaje_error;
+
+	char * nombre_actual;
+	char * usuario;
+	char * album;
+	char * extension;
+	char * nombre_nuevo;
+
+	usuario = buscar_usuario_por_sesion(solicitud->ID_Usuario);
+
+	album = buscar_album_id(usuario, solicitud->ID_Album);
+
+	nombre_actual = buscar_archivo_id(usuario, album, solicitud->ID_Archivo);
+
+	extension = strrchr(nombre_actual,'.');
+
+	nombre_nuevo = (char *)malloc(sizeof(char) * strlen(extension) + strlen(solicitud->nombre));
+	sprintf(nombre_nuevo, "%s%s", solicitud->nombre, extension);
+
+	mensaje_error = (ERROR *)malloc(sizeof(ERROR));
+	if(renombrar_archivo(usuario, album, nombre_actual, nombre_nuevo)){
+		if(renombrar_archivo_registro(usuario, album, solicitud->ID_Archivo, nombre_nuevo)){
+			mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
+
+			mensaje_confirmacion->OP = M_CONFIRMAR;
+			mensaje_confirmacion->ID_Usuario = solicitud->ID_Usuario;
+			mensaje_confirmacion->ID_SUB_OP = solicitud->ID_SUB_OP;
+			strcpy(mensaje_confirmacion->mensaje, "El archivo ha sido renombrado correctamente!");
+
+			*longitud_respuesta = sizeof(CONFIRMAR);
+
+			return (void *)mensaje_confirmacion;
+		}
+		else{
+			strcpy(mensaje_error->mensaje, "Error al renombrar el archivo en el registro.");	
+		}
+	}
+	else{
+		strcpy(mensaje_error->mensaje, "Error al renombrar el archivo solicitado.");
+	}
+	
+	mensaje_error->OP = M_ERROR;
+	mensaje_error->ID_SUB_OP_Fallo = solicitud->ID_SUB_OP;
+	*longitud_respuesta = sizeof(ERROR);
+
+	return (void *)mensaje_error;
 }

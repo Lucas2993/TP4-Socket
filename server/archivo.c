@@ -175,3 +175,74 @@ BOOLEAN eliminar_archivo_de_lista(char * usuario, char * album, int id_archivo){
 	}
 	return resultado;
 }
+
+BOOLEAN renombrar_archivo(char * usuario, char * album, char * nombre_actual, char * nuevo_nombre){
+	char folder [] = CARPETA_ALBUMES;
+	char * old_route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(nombre_actual) + strlen(usuario) + strlen(album));
+	char * new_route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(nuevo_nombre) + strlen(usuario) + strlen(album));
+
+	strcpy(old_route, folder);
+	strcat(old_route, usuario);
+	strcat(old_route, "/");
+	strcat(old_route, album);
+	strcat(old_route, "/");
+	strcat(old_route, nombre_actual);
+
+	strcpy(new_route, folder);
+	strcat(new_route, usuario);
+	strcat(new_route, "/");
+	strcat(new_route, album);
+	strcat(new_route, "/");
+	strcat(new_route, nuevo_nombre);
+
+	if(rename(old_route, new_route) == 0){
+		return TRUE;
+	}
+	return FALSE;
+}
+
+BOOLEAN renombrar_archivo_registro(char * usuario, char * album, int id_archivo, char * nuevo_nombre){
+	FILE * archivo_archivos;
+	FILE * archivo_auxiliar;
+	char archivo[MAX_NOMBRE_SOLICITUD];
+	int id = -1;
+	char folder [] = CARPETA_ALBUMES;
+	char * route = (char *)malloc(strlen(folder)+ strlen("//") + strlen(album) + strlen(usuario) + strlen(ARCHIVO_ARCHIVOS));
+	char * route_aux = (char *)malloc(strlen(folder)+ strlen("//") + strlen(album) + strlen(usuario) + strlen(ARCHIVO_AUXILIAR_ARCHIVOS));
+
+	strcpy(route, folder);
+	strcat(route, usuario);
+	strcat(route, "/");
+	strcat(route, album);
+	strcat(route, "/");
+	strcat(route, ARCHIVO_ARCHIVOS);
+
+	strcpy(route_aux, folder);
+	strcat(route_aux, usuario);
+	strcat(route_aux, "/");
+	strcat(route_aux, album);
+	strcat(route_aux, "/");
+	strcat(route_aux, ARCHIVO_AUXILIAR_ARCHIVOS);
+
+	archivo_archivos = fopen(route, "r");
+	archivo_auxiliar = fopen(route_aux, "w");
+
+	if(archivo_archivos != NULL && archivo_auxiliar != NULL){
+		while(fscanf(archivo_archivos, "%s", archivo) > 0){
+			fscanf(archivo_archivos, "%d", &id);
+			if(id == id_archivo){
+				fprintf(archivo_auxiliar, "%s %d\n", nuevo_nombre, id);
+			}
+			else{
+				fprintf(archivo_auxiliar, "%s %d\n", archivo, id);
+			}
+		}
+		fclose(archivo_archivos);
+		fclose(archivo_auxiliar);
+	}
+
+	remove(route);
+	rename(route_aux,route);
+
+	return TRUE;
+}

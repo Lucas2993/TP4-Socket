@@ -76,7 +76,7 @@ int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 												{"Listar Archivos Album", listar_archivos},
 												{"Subir Archivo Album", subir_archivo_album},
 												{"Descargar Archivo Album", descargar_archivo_album},
-												{"Modificar Archivo Album", salir},
+												{"Modificar Archivo Album", modificar_archivo},
 												{"Eliminar Archivo Album", eliminar_archivo},
 												{"Compartir Album Usuario", salir},
 												{"Dejar Compartir Album Usuario", salir},
@@ -326,4 +326,31 @@ void * eliminar_archivo(int * longitud){
 	obtener_datos("Ingrese el id del archivo: ","%d",&id_archivo);
 
 	return mensaje_solicitud(id_usuario, SubOP_Eliminar_archivo_album , id_album, id_archivo, "", longitud);
+}
+
+void * modificar_archivo(int * longitud){
+	SOLICITUD * mensaje_solicitud;
+	int id_album;
+	int id_archivo;
+	char nombre[MAX_NOMBRE_SOLICITUD];
+
+	printf("Ingrese el id del album donde se encuentra el archivo: ");
+	scanf("%d", &id_album);
+	printf("Ingrese el id del archivo a modificar: ");
+	scanf("%d", &id_archivo);
+	printf("Ingrese el nuevo nombre para el archivo (sin extension): ");
+	scanf("%s", nombre);
+
+	mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
+
+	mensaje_solicitud->OP = M_SOLICITUD;
+	mensaje_solicitud->ID_Usuario = id_usuario;
+	mensaje_solicitud->ID_SUB_OP = SubOP_Modificar_archivo_album;
+	mensaje_solicitud->ID_Album = id_album;
+	mensaje_solicitud->ID_Archivo = id_archivo;
+	strcpy(mensaje_solicitud->nombre, nombre);
+
+	*longitud = sizeof(SOLICITUD);
+
+	return (void *)mensaje_solicitud;
 }

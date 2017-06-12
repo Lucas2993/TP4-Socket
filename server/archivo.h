@@ -6,3 +6,5 @@ char * buscar_archivo_id(char *, char *, int);
 BOOLEAN eliminar_archivo(char *, char *, char *);
 BOOLEAN listar_archivos(FILE *, char *, char *);
 BOOLEAN eliminar_archivo_de_lista(char *, char *, int);
+BOOLEAN renombrar_archivo(char *, char *, char *, char *);
+BOOLEAN renombrar_archivo_registro(char *, char *, int, char *);
