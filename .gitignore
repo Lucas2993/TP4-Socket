@@ -5,3 +5,6 @@ server/*.o
 utils/*.o
 client/client
 server/server
+server/sesiones.txt
+server/usuarios.txt
+server/albumes/*
