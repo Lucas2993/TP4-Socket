@@ -247,3 +247,61 @@ BOOLEAN listar_archivos_usuario(int sockid, int id_usuario, int id_album){
 
   return TRUE;
 }
+
+BOOLEAN listar_usuarios_registrados(int sockid, int id_usuario){
+  SOLICITUD * mensaje_solicitud;
+  CONFIRMAR * mensaje_confirmacion;
+  char msg[MAXLINEA];
+  char buffer[MAXLINEA];
+  char * ruta;
+  FILE * fp;
+
+  mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
+
+  mensaje_solicitud->OP = M_SOLICITUD;
+  mensaje_solicitud->ID_Usuario = id_usuario;
+  mensaje_solicitud->ID_SUB_OP = SubOP_Listar_usuarios;
+  mensaje_solicitud->ID_Album = 0;
+  mensaje_solicitud->ID_Archivo = 0;
+
+  if((write(sockid,(void *)mensaje_solicitud,sizeof(SOLICITUD))) < 0){
+    printf("client: write  error :%d\n", errno);
+    exit(0);
+  }
+
+  if((read(sockid,(char *)msg,MAXLINEA))< 0){
+    printf("client: read  error :%d\n", errno);
+    exit(0);
+  }
+
+  // TODO reconocimiento de mensajes tanto de confirmacion como de error.
+
+  if(msg[0] == M_CONFIRMAR){
+    mensaje_confirmacion = (CONFIRMAR *)msg;
+
+    // Hasta aca llegue que es el momento donde me confirma la recepcion de los
+    // datos del archivo.
+    ruta = (char *)malloc(strlen(ARCHIVO_TEMPORAL_BASE) + strlen(EXTENSION_ARCHIVO_TEMPORAL));
+    strcpy(ruta, ARCHIVO_TEMPORAL_BASE);
+    strcat(ruta, EXTENSION_ARCHIVO_TEMPORAL);
+  }
+
+  recibir_archivo_socket("Cliente", sockid, ruta);
+
+  if((fp = fopen(ruta, "r")) != NULL){
+    printf("\n");
+    printf("Usuarios:\n");
+    bzero(buffer, MAXLINEA);
+    while(fgets(buffer, MAXLINEA, fp) != NULL){
+      printf("%s", buffer);    
+    }
+    if(strlen(buffer) == 0){
+      printf("Usted no tiene usuarios registrados.\n");
+    }
+    printf("\n");
+    close(fp);
+    remove(ruta);
+  }
+
+  return TRUE;
+}

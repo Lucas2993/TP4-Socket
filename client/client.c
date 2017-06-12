@@ -80,7 +80,7 @@ int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 												{"Eliminar Archivo Album", eliminar_archivo},
 												{"Compartir Album Usuario", salir},
 												{"Dejar Compartir Album Usuario", salir},
-												{"Listar Usuarios", salir},
+												{"Listar Usuarios", listar_usuarios},
 												{"Cerrar Sesion", cerrar_sesion}
 											};
 
@@ -353,4 +353,19 @@ void * modificar_archivo(int * longitud){
 	*longitud = sizeof(SOLICITUD);
 
 	return (void *)mensaje_solicitud;
+}
+
+void * listar_usuarios(int * longitud){
+	int sockid;
+	BOOLEAN resultado;
+
+	sockid = iniciar_cliente_ftp(puerto_servidor, direccion);
+
+	*longitud = 0;
+
+	resultado = listar_usuarios_registrados(sockid, id_usuario);
+
+	close(sockid);
+
+	return NULL;
 }

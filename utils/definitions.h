@@ -49,7 +49,7 @@
 #define SubOP_Eliminar_archivo_album 8
 #define SubOP_Compartir_album_usuario 9
 #define SubOP_Dejar_compartir_album_usuario 10
-#define SubOP_Listar_usuario 11
+#define SubOP_Listar_usuarios 11
 #define SubOP_Descargar_archivo_album 12
 
 typedef enum boolean{

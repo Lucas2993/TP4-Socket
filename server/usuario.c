@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "../utils/definitions.h"
+#include "sesion.h"
 #include "usuario.h"
 
 USUARIO * buscar_usuario(char * nombre_usuario){
@@ -56,7 +57,7 @@ BOOLEAN agregar_usuario(char * usuario, char * clave, char * nombre, char * apel
 }
 
 BOOLEAN crear_usuario(char * usuario){
-	char folder [] = "albumes/";
+	char folder [] = CARPETA_ALBUMES;
 	char * route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(usuario));
 
 	strcpy(route, folder);
@@ -80,4 +81,33 @@ BOOLEAN validar_usuario( int  id ){
 	}
 	return TRUE;
 
+}
+
+BOOLEAN listar_usuarios(FILE * fp){
+	FILE * archivo;
+	char usuario[MAX_USUARIO];
+	char clave[MAX_CLAVE];
+	char nombre[MAX_NOMBRE];
+	char apellido[MAX_APELLIDO];
+	int i = 1;
+
+	BOOLEAN respuesta = TRUE;
+
+	archivo = fopen(ARCHIVO_USUARIOS, "r");
+
+	if(archivo != NULL){
+		while(fscanf(archivo, "%s", usuario) > 0){
+			fscanf(archivo, "%s", clave);
+			fscanf(archivo, "%s", nombre);
+			fscanf(archivo, "%s", apellido);
+
+			fprintf(fp, "%d. Usuario: %s, Nombre: %s, Apellido: %s\n", i, usuario, nombre, apellido);
+			i++;
+		}
+		fclose(archivo);
+	}
+
+	fclose(fp);
+
+	return respuesta;
 }
