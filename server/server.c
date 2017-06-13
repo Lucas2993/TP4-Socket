@@ -379,13 +379,16 @@ void * subOP_compartir_album_usuario(SOLICITUD * solicitud, int * longitud_respu
 
 	char * usuario_destino;
 	char * usuario;
+	char * album;
 
 	usuario_destino = (char *)malloc(sizeof(char) * strlen(solicitud->nombre));
 	strcpy(usuario_destino, solicitud->nombre);
 
 	usuario = buscar_usuario_por_sesion(solicitud->ID_Usuario);
 
-	if(compartir_album_usuario(usuario, usuario_destino, solicitud->ID_Album)){
+	album = buscar_album_id(usuario, solicitud->ID_Album);
+
+	if(compartir_album_usuario(usuario, usuario_destino, album, solicitud->ID_Album)){
 		mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
 
 		mensaje_confirmacion->OP = M_CONFIRMAR;
@@ -415,13 +418,16 @@ void * subOP_dejar_compartir_album_usuario(SOLICITUD * solicitud, int * longitud
 
 	char * usuario_destino;
 	char * usuario;
+	char * album;
 
 	usuario_destino = (char *)malloc(sizeof(char) * strlen(solicitud->nombre));
 	strcpy(usuario_destino, solicitud->nombre);
 
 	usuario = buscar_usuario_por_sesion(solicitud->ID_Usuario);
 
-	if(dejar_compartir_album_usuario(usuario, usuario_destino, solicitud->ID_Album)){
+	album = buscar_album_id(usuario, solicitud->ID_Album);
+
+	if(dejar_compartir_album_usuario(usuario, usuario_destino, album, solicitud->ID_Album)){
 		mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
 
 		mensaje_confirmacion->OP = M_CONFIRMAR;

@@ -4,7 +4,7 @@
 #include "../utils/definitions.h"
 #include "compartir.h"
 
-BOOLEAN compartir_album_usuario(char * usuario, char * usuario_destino, int album){
+BOOLEAN compartir_album_usuario(char * usuario, char * usuario_destino, char * album, int album_id){
 	FILE * compatidos_conmigo;
 	FILE * compatidos_otros;
 	char folder [] = CARPETA_ALBUMES;
@@ -23,8 +23,8 @@ BOOLEAN compartir_album_usuario(char * usuario, char * usuario_destino, int albu
 	compatidos_otros = fopen(route_compartidos_otros, "a");
 
 	if(compatidos_conmigo != NULL && compatidos_otros != NULL){
-		fprintf(compatidos_conmigo, "%s %d\n", usuario, album);
-		fprintf(compatidos_otros, "%s %d\n", usuario_destino, album);
+		fprintf(compatidos_conmigo, "%s %s %d\n", usuario, album, album_id);
+		fprintf(compatidos_otros, "%s %s %d\n", usuario_destino, album, album_id);
 		fclose(compatidos_conmigo);
 		fclose(compatidos_otros);
 	}
@@ -32,14 +32,15 @@ BOOLEAN compartir_album_usuario(char * usuario, char * usuario_destino, int albu
 	return TRUE;
 }
 
-BOOLEAN dejar_compartir_album_usuario(char * usuario, char * usuario_destino, int album){
+BOOLEAN dejar_compartir_album_usuario(char * usuario, char * usuario_destino, char * album, int album_id){
 	FILE * compatidos_conmigo;
 	FILE * compatidos_otros;
 	FILE * compatidos_conmigo_aux;
 	FILE * compatidos_otros_aux;
 	char folder [] = CARPETA_ALBUMES;
 	char usuario_archivo[MAX_USUARIO];
-	int album_id;
+	char album_archivo[MAX_NOMBRE_SOLICITUD];
+	int album_id_archivo;
 
 	char * route_compartidos_otros = (char *)malloc(strlen(folder) + strlen(usuario) + strlen(ARCHIVO_COMPARTIDOS_OTROS));
 	char * route_compartidos_conmigo = (char *)malloc(strlen(folder) + strlen(usuario_destino) + strlen(ARCHIVO_COMPARTIDOS_CONMIGO));
@@ -69,18 +70,20 @@ BOOLEAN dejar_compartir_album_usuario(char * usuario, char * usuario_destino, in
 
 	if(compatidos_conmigo != NULL && compatidos_otros != NULL && compatidos_conmigo_aux != NULL && compatidos_otros_aux != NULL){
 		while(fscanf(compatidos_conmigo, "%s", usuario_archivo) > 0){
-			fscanf(compatidos_conmigo, "%d", &album_id);
-			if(album != album_id && strcmp(usuario_archivo, usuario) != 0){
-				fprintf(compatidos_conmigo_aux, "%s %d\n", usuario_archivo, album_id);
+			fscanf(compatidos_conmigo, "%s", album_archivo);
+			fscanf(compatidos_conmigo, "%d", &album_id_archivo);
+			if(album_id != album_id_archivo && strcmp(usuario_archivo, usuario) != 0){
+				fprintf(compatidos_conmigo_aux, "%s %s %d\n", usuario_archivo, album_archivo, album_id);
 			}
 		}
 		fclose(compatidos_conmigo);
 		fclose(compatidos_conmigo_aux);
 
 		while(fscanf(compatidos_otros, "%s", usuario_archivo) > 0){
-			fscanf(compatidos_otros, "%d", &album_id);
-			if(album != album_id && strcmp(usuario_archivo, usuario) != 0){
-				fprintf(compatidos_otros_aux, "%s %d\n", usuario_archivo, album_id);
+			fscanf(compatidos_otros, "%s", album_archivo);
+			fscanf(compatidos_otros, "%d", &album_id_archivo);
+			if(album_id != album_id_archivo && strcmp(usuario_archivo, usuario) != 0){
+				fprintf(compatidos_otros_aux, "%s %s %d\n", usuario_archivo, album_archivo, album_id);
 			}
 		}
 		fclose(compatidos_otros);
@@ -94,3 +97,30 @@ BOOLEAN dejar_compartir_album_usuario(char * usuario, char * usuario_destino, in
 
 	return TRUE;
 }
+
+// BOOLEAN listar_albumes_compartidos_conmigo(FILE * fp, char * usuario){
+// 	FILE * archivo;
+// 	char folder [] = CARPETA_ALBUMES;
+// 	char * route = (char *)malloc(strlen(folder)+ strlen(usuario) + strlen(ARCHIVO_COMPARTIDOS_CONMIGO));
+// 	char usuario[MAX_NOMBRE_SOLICITUD];
+// 	int id_album;
+// 	BOOLEAN respuesta = TRUE;
+
+// 	strcpy(route, folder);
+// 	strcat(route, usuario);
+// 	strcat(route, ARCHIVO_COMPARTIDOS_CONMIGO);
+
+// 	archivo = fopen(route, "r");
+
+// 	if(archivo != NULL){
+// 		while(fscanf(archivo, "%s", album) > 0){
+// 			fscanf(archivo, "%d", &id);
+// 			fprintf(fp, "%d- %s\n", id, album);
+// 		}
+// 		fclose(archivo);
+// 	}
+
+// 	fclose(fp);
+
+// 	return respuesta;
+// }
