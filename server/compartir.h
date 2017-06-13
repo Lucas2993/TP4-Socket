@@ -6,3 +6,4 @@
 BOOLEAN compartir_album_usuario(char *, char *, char *, int);
 BOOLEAN dejar_compartir_album_usuario(char *, char *, char *, int);
 BOOLEAN listar_albumes_compartidos_conmigo(FILE *, char *);
+BOOLEAN listar_albumes_compartidos_otro(FILE *, char *);

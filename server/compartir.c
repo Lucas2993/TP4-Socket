@@ -126,3 +126,32 @@ BOOLEAN listar_albumes_compartidos_conmigo(FILE * fp, char * usuario){
 
 	return respuesta;
 }
+
+BOOLEAN listar_albumes_compartidos_otro(FILE * fp, char * usuario){
+	FILE * archivo;
+	char folder [] = CARPETA_ALBUMES;
+	char * route = (char *)malloc(strlen(folder)+ strlen(usuario) + strlen(ARCHIVO_COMPARTIDOS_OTROS));
+	char usuario_archivo[MAX_NOMBRE_SOLICITUD];
+	char album_archivo[MAX_NOMBRE_SOLICITUD];
+	int id_album;
+	BOOLEAN respuesta = TRUE;
+
+	strcpy(route, folder);
+	strcat(route, usuario);
+	strcat(route, ARCHIVO_COMPARTIDOS_OTROS);
+
+	archivo = fopen(route, "r");
+
+	if(archivo != NULL){
+		while(fscanf(archivo, "%s", usuario_archivo) > 0){
+			fscanf(archivo, "%s", album_archivo);
+			fscanf(archivo, "%d", &id_album);
+			fprintf(fp, "Destinatario: %s, Nombre del album: %s, Identificador: %d\n", usuario_archivo, album_archivo, id_album);
+		}
+		fclose(archivo);
+	}
+
+	fclose(fp);
+
+	return respuesta;
+}

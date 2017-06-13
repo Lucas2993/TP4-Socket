@@ -9,3 +9,4 @@ void listar_albumes_usuario(int, SOLICITUD *);
 void listar_archivos_album_usuario(int, SOLICITUD *);
 void listar_usuarios_registrados(int, SOLICITUD *);
 void listar_albumes_compartidos_usuario(int, SOLICITUD *);
+void listar_albumes_compartidos_otros(int, SOLICITUD *);
