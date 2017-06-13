@@ -32,4 +32,6 @@ void * modificar_archivo(SOLICITUD *, int *);
 
 void * subOP_compartir_album_usuario(SOLICITUD *, int *);
 
+void * subOP_dejar_compartir_album_usuario(SOLICITUD *, int *);
+
 #endif /* SERVER_SERVER_H_ */

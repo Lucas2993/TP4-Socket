@@ -79,7 +79,7 @@ int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 												{"Modificar Archivo Album", modificar_archivo},
 												{"Eliminar Archivo Album", eliminar_archivo},
 												{"Compartir Album Usuario", compartir_album_usuario},
-												{"Dejar Compartir Album Usuario", salir},
+												{"Dejar Compartir Album Usuario", dejar_compartir_album_usuario},
 												{"Listar Usuarios", listar_usuarios},
 												{"Cerrar Sesion", cerrar_sesion}
 											};
@@ -385,6 +385,30 @@ void * compartir_album_usuario(int * longitud){
 	mensaje_solicitud->OP = M_SOLICITUD;
 	mensaje_solicitud->ID_Usuario = id_usuario;
 	mensaje_solicitud->ID_SUB_OP = SubOP_Compartir_album_usuario;
+	mensaje_solicitud->ID_Album = id_album;
+	mensaje_solicitud->ID_Archivo = 0;
+	strcpy(mensaje_solicitud->nombre, nombre);
+
+	*longitud = sizeof(SOLICITUD);
+
+	return (void *)mensaje_solicitud;
+}
+
+void * dejar_compartir_album_usuario(int * longitud){
+	SOLICITUD * mensaje_solicitud;
+	int id_album;
+	char nombre[MAX_USUARIO];
+
+	printf("Ingrese el id del album que desea dejar de compartir: ");
+	scanf("%d", &id_album);
+	printf("Ingrese el usuario al que le gustaria dejar de compartirle el album: ");
+	scanf("%s", nombre);
+
+	mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
+
+	mensaje_solicitud->OP = M_SOLICITUD;
+	mensaje_solicitud->ID_Usuario = id_usuario;
+	mensaje_solicitud->ID_SUB_OP = SubOP_Dejar_compartir_album_usuario;
 	mensaje_solicitud->ID_Album = id_album;
 	mensaje_solicitud->ID_Archivo = 0;
 	strcpy(mensaje_solicitud->nombre, nombre);

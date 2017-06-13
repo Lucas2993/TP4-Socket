@@ -69,18 +69,18 @@ BOOLEAN dejar_compartir_album_usuario(char * usuario, char * usuario_destino, in
 
 	if(compatidos_conmigo != NULL && compatidos_otros != NULL && compatidos_conmigo_aux != NULL && compatidos_otros_aux != NULL){
 		while(fscanf(compatidos_conmigo, "%s", usuario_archivo) > 0){
-			fscanf(compatidos_conmigo, "%d", album_id);
+			fscanf(compatidos_conmigo, "%d", &album_id);
 			if(album != album_id && strcmp(usuario_archivo, usuario) != 0){
-				fprintf(compatidos_conmigo_aux, "%s %s\n", usuario_archivo, album_id);
+				fprintf(compatidos_conmigo_aux, "%s %d\n", usuario_archivo, album_id);
 			}
 		}
 		fclose(compatidos_conmigo);
 		fclose(compatidos_conmigo_aux);
 
 		while(fscanf(compatidos_otros, "%s", usuario_archivo) > 0){
-			fscanf(compatidos_otros, "%s", album_id);
+			fscanf(compatidos_otros, "%d", &album_id);
 			if(album != album_id && strcmp(usuario_archivo, usuario) != 0){
-				fprintf(compatidos_otros_aux, "%s %s\n", usuario_archivo, album_id);
+				fprintf(compatidos_otros_aux, "%s %d\n", usuario_archivo, album_id);
 			}
 		}
 		fclose(compatidos_otros);
