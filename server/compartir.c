@@ -98,29 +98,31 @@ BOOLEAN dejar_compartir_album_usuario(char * usuario, char * usuario_destino, ch
 	return TRUE;
 }
 
-// BOOLEAN listar_albumes_compartidos_conmigo(FILE * fp, char * usuario){
-// 	FILE * archivo;
-// 	char folder [] = CARPETA_ALBUMES;
-// 	char * route = (char *)malloc(strlen(folder)+ strlen(usuario) + strlen(ARCHIVO_COMPARTIDOS_CONMIGO));
-// 	char usuario[MAX_NOMBRE_SOLICITUD];
-// 	int id_album;
-// 	BOOLEAN respuesta = TRUE;
+BOOLEAN listar_albumes_compartidos_conmigo(FILE * fp, char * usuario){
+	FILE * archivo;
+	char folder [] = CARPETA_ALBUMES;
+	char * route = (char *)malloc(strlen(folder)+ strlen(usuario) + strlen(ARCHIVO_COMPARTIDOS_CONMIGO));
+	char usuario_archivo[MAX_NOMBRE_SOLICITUD];
+	char album_archivo[MAX_NOMBRE_SOLICITUD];
+	int id_album;
+	BOOLEAN respuesta = TRUE;
 
-// 	strcpy(route, folder);
-// 	strcat(route, usuario);
-// 	strcat(route, ARCHIVO_COMPARTIDOS_CONMIGO);
+	strcpy(route, folder);
+	strcat(route, usuario);
+	strcat(route, ARCHIVO_COMPARTIDOS_CONMIGO);
 
-// 	archivo = fopen(route, "r");
+	archivo = fopen(route, "r");
 
-// 	if(archivo != NULL){
-// 		while(fscanf(archivo, "%s", album) > 0){
-// 			fscanf(archivo, "%d", &id);
-// 			fprintf(fp, "%d- %s\n", id, album);
-// 		}
-// 		fclose(archivo);
-// 	}
+	if(archivo != NULL){
+		while(fscanf(archivo, "%s", usuario_archivo) > 0){
+			fscanf(archivo, "%s", album_archivo);
+			fscanf(archivo, "%d", &id_album);
+			fprintf(fp, "Propietario: %s, Nombre del album: %s, Identificador: %d\n", usuario_archivo, album_archivo, id_album);
+		}
+		fclose(archivo);
+	}
 
-// 	fclose(fp);
+	fclose(fp);
 
-// 	return respuesta;
-// }
+	return respuesta;
+}

@@ -51,6 +51,8 @@
 #define SubOP_Dejar_compartir_album_usuario 10
 #define SubOP_Listar_usuarios 11
 #define SubOP_Descargar_archivo_album 12
+#define SubOP_Listar_albumes_compartidos_conmigo 13
+#define SubOP_Listar_albumes_compartidos_otros 14
 
 typedef enum boolean{
 	FALSE, TRUE

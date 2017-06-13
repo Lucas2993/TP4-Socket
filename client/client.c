@@ -270,6 +270,10 @@ void * listar_albumes(int * longitud){
 
 	resultado = listar_albumes_usuario(sockid, id_usuario);
 
+	sockid = iniciar_cliente_ftp(puerto_servidor, direccion);
+
+	listar_albumes_compartidos_usuario(sockid, id_usuario);
+
 	close(sockid);
 
 	return NULL;

@@ -95,21 +95,26 @@ void doftp(int newsd){
     usuario = buscar_usuario_por_sesion(mensaje_solicitud->ID_Usuario);
     // Obtener nombre del album.
     album = buscar_album_id(usuario, mensaje_solicitud->ID_Album);
-    
-    if(mensaje_solicitud->ID_SUB_OP == SubOP_Subir_archivo_album){
+
+    switch(mensaje_solicitud->ID_SUB_OP){
+    case SubOP_Subir_archivo_album:
       recepcion_archivo(newsd, mensaje_solicitud);
-    }
-    else if(mensaje_solicitud->ID_SUB_OP == SubOP_Descargar_archivo_album){
+      break;
+    case SubOP_Descargar_archivo_album:
       envio_archivo(newsd, mensaje_solicitud);
-    }
-    else if(mensaje_solicitud->ID_SUB_OP == SubOP_Listar_albumes){
+      break;
+    case SubOP_Listar_albumes:
       listar_albumes_usuario(newsd, mensaje_solicitud);
-    }
-    else if(mensaje_solicitud->ID_SUB_OP == SubOP_Listar_archivos_album){
+      break;
+    case SubOP_Listar_archivos_album:
       listar_archivos_album_usuario(newsd, mensaje_solicitud);
-    }
-    else if(mensaje_solicitud->ID_SUB_OP == SubOP_Listar_usuarios){
+      break;
+    case SubOP_Listar_usuarios:
       listar_usuarios_registrados(newsd, mensaje_solicitud);
+      break;
+    case SubOP_Listar_albumes_compartidos_conmigo:
+      listar_albumes_compartidos_usuario(newsd, mensaje_solicitud);
+      break;
     }
   }
 }
@@ -288,6 +293,42 @@ void listar_usuarios_registrados(int socket_id, SOLICITUD * mensaje_solicitud){
   }
 
   listar_usuarios(fp);
+
+  enviar_archivo_socket("Servidor TCP", socket_id, archivo_temporal);
+
+  remove(archivo_temporal);
+}
+
+void listar_albumes_compartidos_usuario(int socket_id, SOLICITUD * mensaje_solicitud){
+  CONFIRMAR * mensaje_confirmacion;
+  char * usuario;
+  char archivo_temporal[MAXPATH];
+  FILE * fp;
+  int i = 1;
+
+  // Obtener nombre usuario.
+  usuario = buscar_usuario_por_sesion(mensaje_solicitud->ID_Usuario);
+
+  mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
+
+  mensaje_confirmacion->OP = M_CONFIRMAR;
+  mensaje_confirmacion->ID_Usuario = mensaje_solicitud->ID_Usuario;
+  mensaje_confirmacion->ID_SUB_OP = mensaje_solicitud->ID_SUB_OP;
+  strcpy(mensaje_confirmacion->mensaje, "OK");
+
+  // Se envia un mensaje al cliente aceptando el archivo y validando los datos.
+  if((write(socket_id,(void *)mensaje_confirmacion,sizeof(CONFIRMAR))) < 0){
+    printf("Servidor TCP: Error al enviar el mensaje de confirmacion de datos: %d\n",errno);
+    exit(0);
+  }
+
+  sprintf(archivo_temporal, "%s%d%s", ARCHIVO_TEMPORAL_BASE, i++, EXTENSION_ARCHIVO_TEMPORAL);
+  while((fp = fopen(archivo_temporal, "w")) == NULL){
+    sprintf(archivo_temporal, "%s%d%s", ARCHIVO_TEMPORAL_BASE, i, EXTENSION_ARCHIVO_TEMPORAL);
+    i++;
+  }
+
+  listar_albumes_compartidos_conmigo(fp, usuario);
 
   enviar_archivo_socket("Servidor TCP", socket_id, archivo_temporal);
 
