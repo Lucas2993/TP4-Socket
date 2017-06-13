@@ -18,7 +18,7 @@
 # ubicación servidores
 VIA_SRV = server
 
-OBJS_SRV = $(VIA_SRV)/server.o $(VIA_SRV)/usuario.o $(VIA_SRV)/sesion.o $(VIA_SRV)/album.o $(VIA_SRV)/archivo.o $(VIA_SRV)/server_ftp.o $(VIA_UTIL)/ftp_utils.o $(VIA_UTIL)/mensajes_utils.o
+OBJS_SRV = $(VIA_SRV)/server.o $(VIA_SRV)/usuario.o $(VIA_SRV)/sesion.o $(VIA_SRV)/album.o $(VIA_SRV)/archivo.o $(VIA_SRV)/server_ftp.o $(VIA_UTIL)/ftp_utils.o $(VIA_UTIL)/mensajes_utils.o $(VIA_SRV)/compartir.o
 
 # ubicación clientes
 VIA_CLI = client
@@ -68,3 +68,5 @@ ftp_utils.o:	$(VIA_UTIL)/ftp_utils.c $(VIA_UTIL)/ftp_utils.h $(VIA_UTIL)/definit
 mensajes_utils.o:	$(VIA_UTIL)/mensajes_utils.c $(VIA_UTIL)/mensajes_utils.h $(VIA_UTIL)/definitions.h
 	cc -c $(VIA_UTIL)/mensajes_utils.c
 
+compartir.o:	$(VIA_SRV)/compartir.c $(VIA_SRV)/compartir.h $(VIA_UTIL)/definitions.h
+	cc -c $(VIA_SRV)/compartir.c

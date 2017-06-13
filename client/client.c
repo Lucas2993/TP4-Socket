@@ -78,7 +78,7 @@ int principal(FILE *fp, int sockfd, const struct sockaddr *dir, socklen_t sa) {
 												{"Descargar Archivo Album", descargar_archivo_album},
 												{"Modificar Archivo Album", modificar_archivo},
 												{"Eliminar Archivo Album", eliminar_archivo},
-												{"Compartir Album Usuario", salir},
+												{"Compartir Album Usuario", compartir_album_usuario},
 												{"Dejar Compartir Album Usuario", salir},
 												{"Listar Usuarios", listar_usuarios},
 												{"Cerrar Sesion", cerrar_sesion}
@@ -368,4 +368,28 @@ void * listar_usuarios(int * longitud){
 	close(sockid);
 
 	return NULL;
+}
+
+void * compartir_album_usuario(int * longitud){
+	SOLICITUD * mensaje_solicitud;
+	int id_album;
+	char nombre[MAX_USUARIO];
+
+	printf("Ingrese el id del album que desea compartir: ");
+	scanf("%d", &id_album);
+	printf("Ingrese el usuario al que le gustaria compartirle el album: ");
+	scanf("%s", nombre);
+
+	mensaje_solicitud = (SOLICITUD *)malloc(sizeof(SOLICITUD));
+
+	mensaje_solicitud->OP = M_SOLICITUD;
+	mensaje_solicitud->ID_Usuario = id_usuario;
+	mensaje_solicitud->ID_SUB_OP = SubOP_Compartir_album_usuario;
+	mensaje_solicitud->ID_Album = id_album;
+	mensaje_solicitud->ID_Archivo = 0;
+	strcpy(mensaje_solicitud->nombre, nombre);
+
+	*longitud = sizeof(SOLICITUD);
+
+	return (void *)mensaje_solicitud;
 }

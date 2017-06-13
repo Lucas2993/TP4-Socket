@@ -35,6 +35,7 @@ void * modificar_album(int *);
 void * eliminar_archivo(int *);
 void * modificar_archivo(int *);
 void * listar_usuarios(int *);
+void * compartir_album_usuario(int *);
 
 void obtener_datos( char * ouput , char * tipo , void * dato );
 

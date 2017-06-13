@@ -12,6 +12,7 @@
 #include "../utils/definitions.h"
 #include "album.h"
 #include "archivo.h"
+#include "compartir.h"
 #include "server_ftp.h"
 #include "server.h"
 
@@ -199,10 +200,11 @@ void * solicitud(char * mensaje, int * longitud_respuesta){
 		return subOP_eliminar_archivo(solicitud, longitud_respuesta);
 		break;
 	case SubOP_Compartir_album_usuario:
+		return subOP_compartir_album_usuario(solicitud, longitud_respuesta);
 		break;
 	case SubOP_Dejar_compartir_album_usuario:
 		break;
-	case SubOP_Listar_usuario:
+	case SubOP_Listar_usuarios:
 		break;
 	default:
 			return mensaje_error(M_ERROR , '0' ,"Error: El codigo de sub operacion no existe", longitud_respuesta);
@@ -365,6 +367,45 @@ void * modificar_archivo(SOLICITUD * solicitud, int * longitud_respuesta){
 	
 	mensaje_error->OP = M_ERROR;
 	mensaje_error->ID_SUB_OP_Fallo = solicitud->ID_SUB_OP;
+	*longitud_respuesta = sizeof(ERROR);
+
+	return (void *)mensaje_error;
+}
+
+void * subOP_compartir_album_usuario(SOLICITUD * solicitud, int * longitud_respuesta){
+	CONFIRMAR * mensaje_confirmacion;
+	ERROR * mensaje_error;
+
+	char * usuario_destino;
+	char * usuario;
+	char * album;
+
+	usuario_destino = (char *)malloc(sizeof(char) * strlen(solicitud->nombre));
+	strcpy(usuario_destino, solicitud->nombre);
+
+	usuario = buscar_usuario_por_sesion(solicitud->ID_Usuario);
+
+	album = buscar_album_id(usuario, solicitud->ID_Album);
+
+	if(compartir_album_usuario(usuario, usuario_destino, solicitud->ID_Album)){
+		mensaje_confirmacion = (CONFIRMAR *)malloc(sizeof(CONFIRMAR));
+
+		mensaje_confirmacion->OP = M_CONFIRMAR;
+		mensaje_confirmacion->ID_Usuario = solicitud->ID_Usuario;
+		mensaje_confirmacion->ID_SUB_OP = solicitud->ID_SUB_OP;
+		strcpy(mensaje_confirmacion->mensaje, "El album ha sido compartido correctamente!");
+
+		*longitud_respuesta = sizeof(CONFIRMAR);
+
+		return (void *)mensaje_confirmacion;
+	}
+	
+	mensaje_error = (ERROR *)malloc(sizeof(ERROR));
+
+	mensaje_error->OP = M_ERROR;
+	mensaje_error->ID_SUB_OP_Fallo = solicitud->ID_SUB_OP;
+	strcpy(mensaje_error->mensaje, "Error al compartir el album especificado.");
+		
 	*longitud_respuesta = sizeof(ERROR);
 
 	return (void *)mensaje_error;
