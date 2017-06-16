@@ -1,2 +1,0 @@
-Nuevo_nombre.csv 1
-archivo.csv 2
