@@ -155,9 +155,7 @@ BOOLEAN eliminar_album_de_lista( char * usuario, int id_album ){
 	if(archivo != NULL && aux != NULL){
 		while(fscanf(archivo, "%s", album) > 0){
 			fscanf(archivo, "%d", &id);
-			printf("------------------- %s : %d\n",album,id );
 			if(id != id_album){
-				printf("%s : %d\n",album,id );
 				fprintf(aux, "%s %d\n", album, id);
 			}
 		}

@@ -53,7 +53,7 @@ void * mensaje_cerrar_sesion(char id , int * longitud ){
 	mensaje_cerrar_sesion = (CERRAR_SESION *)malloc(sizeof(CERRAR_SESION));
 
 	mensaje_cerrar_sesion->OP = M_CERRAR_SESION;
-	mensaje_cerrar_sesion->ID_Usuario = id + '0';
+	mensaje_cerrar_sesion->ID_Usuario = id;
 
 	*longitud = sizeof(CERRAR_SESION);
 	return (void *)mensaje_cerrar_sesion;

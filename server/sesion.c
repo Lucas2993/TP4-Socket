@@ -78,20 +78,21 @@ BOOLEAN cerrar_sesion_usuario(int id_usuario){
 			if(id != id_usuario){
 				fprintf(aux, "%s %d\n", usuario, id);
 			}
+			else{
+				resultado = TRUE;
+			}
 		}
 		fclose(aux);
 		fclose(archivo);
 
 		remove(ARCHIVO_SESIONES);
 		rename(ARCHIVO_AUXILIAR, ARCHIVO_SESIONES);
-
-		resultado = TRUE;
 	}
 
 	return resultado;
 }
 
-char * buscar_usuario_por_sesion(int id_usuario	){
+char * buscar_usuario_por_sesion(int id_usuario){
 	FILE * archivo;
 	BOOLEAN encontrado = FALSE;
 	char usuario[MAX_USUARIO];
@@ -103,11 +104,11 @@ char * buscar_usuario_por_sesion(int id_usuario	){
 	if(archivo != NULL){
 		while(fscanf(archivo, "%s", usuario) > 0 && !encontrado){
 			fscanf(archivo, "%d", &id);
-			// printf("%s y %d y %d\n", usuario, id, id_usuario);
 			if(id == id_usuario){
 				encontrado = TRUE;
 				respuesta = (char *)malloc(sizeof(char) * strlen(usuario));
 				strcpy(respuesta, usuario);
+				break;
 			}
 		}
 		fclose(archivo);

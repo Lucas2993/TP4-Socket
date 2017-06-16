@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "../utils/definitions.h"
 #include "sesion.h"
 #include "usuario.h"
@@ -48,39 +49,25 @@ BOOLEAN agregar_usuario(char * usuario, char * clave, char * nombre, char * apel
 	if(archivo != NULL){
 		fprintf(archivo, "%s %s %s %s\n", usuario, clave, nombre, apellido);
 		fclose(archivo);
-		BOOLEAN res = crear_usuario(usuario);
-		printf("resultado %d\n",res );
 		resultado = TRUE;
 	}
 
 	return resultado;
 }
 
-BOOLEAN crear_usuario(char * usuario){
+BOOLEAN crear_carpeta_usuario(char * usuario){
 	char folder [] = CARPETA_ALBUMES;
-	char * route = (char *)malloc(strlen(folder)+ strlen("/") + strlen(usuario));
+	char * route = (char *)malloc(strlen(folder) + strlen(usuario));
+	int resultado;
 
 	strcpy(route, folder);
 	strcat(route, usuario);
 
-	if(mkdir(route, 0777) == 0){
+	resultado = mkdir(route, 0777);
+	if(resultado == 0){
 		return TRUE;
 	}
 	return FALSE;
-}
-
-
-BOOLEAN validar_usuario( int  id ){
-	ERROR * mensaje_error;
-	char * nombre_usuario;
-
-	nombre_usuario = buscar_usuario_por_sesion( id );
-
-	if(nombre_usuario == NULL){
-		return FALSE;
-	}
-	return TRUE;
-
 }
 
 BOOLEAN listar_usuarios(FILE * fp){

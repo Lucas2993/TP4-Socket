@@ -29,19 +29,19 @@ int iniciar_cliente_ftp(int puerto_servidor, char * direccion){
   num_blks = 0;
   num_last_blk = 0;
   // len = strlen(path);
-  printf("Cliente: Creando socket\n");
+  // printf("Cliente TCP: Creando socket\n");
   if((sockid = socket(AF_INET,SOCK_STREAM,0)) < 0){
-    printf("Cliente: socket error : %d\n", errno);
+    printf("Cliente TCP: Error creando el socket: %d\n", errno);
     exit(0);
   }
                                              
-  printf("Cliente: Empezando conexion\n");
+  // printf("Cliente TCP: Empezando conexion\n");
   bzero((char *) &server_addr,sizeof(server_addr));
   server_addr.sin_family = AF_INET;
   server_addr.sin_addr.s_addr = inet_addr(direccion);
   server_addr.sin_port = htons(puerto_servidor);
   if(connect(sockid ,(struct sockaddr *) &server_addr,sizeof(server_addr)) < 0){
-    printf("Cliente: Error de conexion: %d\n", errno);
+    printf("Cliente TCP: Error de conexion: %d\n", errno);
     exit(0);
   }
 
@@ -70,21 +70,15 @@ BOOLEAN subir_archivo(char * ruta, int sockid, char * usuario, int id_usuario, i
   strcat(mensaje_solicitud->nombre, ";");
   strcat(mensaje_solicitud->nombre, (strrchr(ruta,'/')+1));
 
-  printf("Control: %s\n", mensaje_solicitud->nombre);
-
   if((write(sockid,(void *)mensaje_solicitud,sizeof(SOLICITUD))) < 0){
-    printf("client: write  error :%d\n", errno);
+    printf("Cliente TCP: Error de escritura en el socket: %d\n", errno);
     exit(0);
   }
-
-  printf("Control 1\n");
 
   if((read(sockid,(char *)msg,MAXLINEA))< 0){
-    printf("client: read  error :%d\n", errno);
+    printf("Cliente TCP: Error de lectura en el socket: %d\n", errno);
     exit(0);
   }
-
-  printf("Control 2\n");
 
   // TODO reconocimiento de mensajes tanto de confirmacion como de error.
 
@@ -94,12 +88,10 @@ BOOLEAN subir_archivo(char * ruta, int sockid, char * usuario, int id_usuario, i
     // Hasta aca llegue que es el momento donde me confirma la recepcion de los
     // datos del archivo.
     if(strcmp(mensaje_confirmacion->mensaje, "OK") == 0)
-      printf("El servidor ha validado los datos sobre el archivo y su destino\n");
+      printf("Cliente TCP: El servidor ha validado los datos sobre el archivo y su destino\n");
   }
 
-  printf("Control 3\n");
-
-  return enviar_archivo_socket("Cliente", sockid, ruta);
+  return enviar_archivo_socket("Cliente TCP", sockid, ruta);
 }
 
 
@@ -119,12 +111,12 @@ BOOLEAN descargar_archivo(char * ruta_destino, int sockid, char * usuario, int i
   strcpy(mensaje_solicitud->nombre, usuario);
 
   if((write(sockid,(void *)mensaje_solicitud,sizeof(SOLICITUD))) < 0){
-    printf("client: write  error :%d\n", errno);
+    printf("Cliente TCP: Error de escritura en el socket: %d\n", errno);
     exit(0);
   }
 
   if((read(sockid,(char *)msg,MAXLINEA))< 0){
-    printf("client: read  error :%d\n", errno);
+    printf("Cliente TCP: Error de escritura en el socket: %d\n", errno);
     exit(0);
   }
 
@@ -141,7 +133,7 @@ BOOLEAN descargar_archivo(char * ruta_destino, int sockid, char * usuario, int i
     strcat(ruta, mensaje_confirmacion->mensaje);
   }
 
-  return recibir_archivo_socket("Cliente", sockid, ruta);
+  return recibir_archivo_socket("Cliente TCP", sockid, ruta);
 }
 
 BOOLEAN listar_albumes_usuario(int sockid, int id_usuario){
@@ -161,12 +153,12 @@ BOOLEAN listar_albumes_usuario(int sockid, int id_usuario){
   mensaje_solicitud->ID_Archivo = 0;
 
   if((write(sockid,(void *)mensaje_solicitud,sizeof(SOLICITUD))) < 0){
-    printf("client: write  error :%d\n", errno);
+    printf("Cliente TCP: Error de escritura en el socket: %d\n", errno);
     exit(0);
   }
 
   if((read(sockid,(char *)msg,MAXLINEA))< 0){
-    printf("client: read  error :%d\n", errno);
+    printf("Cliente TCP: Error de escritura en el socket: %d\n", errno);
     exit(0);
   }
 
@@ -182,11 +174,11 @@ BOOLEAN listar_albumes_usuario(int sockid, int id_usuario){
     strcat(ruta, EXTENSION_ARCHIVO_TEMPORAL);
   }
 
-  recibir_archivo_socket("Cliente", sockid, ruta);
+  recibir_archivo_socket("-", sockid, ruta);
 
   if((fp = fopen(ruta, "r")) != NULL){
     printf("\n");
-    printf("Albumes:\n");
+    printf("Albumes propios:\n");
     bzero(buffer, MAXLINEA);
     while(fgets(buffer, MAXLINEA, fp) != NULL){
       printf("%s", buffer);    
@@ -194,7 +186,6 @@ BOOLEAN listar_albumes_usuario(int sockid, int id_usuario){
     if(strlen(buffer) == 0){
       printf("Usted no tiene albumes registrados.\n");
     }
-    printf("\n");
     close(fp);
     remove(ruta);
   }
@@ -219,12 +210,12 @@ BOOLEAN listar_archivos_usuario(int sockid, int id_usuario, int id_album){
   mensaje_solicitud->ID_Archivo = 0;
 
   if((write(sockid,(void *)mensaje_solicitud,sizeof(SOLICITUD))) < 0){
-    printf("client: write  error :%d\n", errno);
+    printf("Cliente TCP: Error de escritura en el socket: %d\n", errno);
     exit(0);
   }
 
   if((read(sockid,(char *)msg,MAXLINEA))< 0){
-    printf("client: read  error :%d\n", errno);
+    printf("Cliente TCP: Error de lectura en el socket: %d\n", errno);
     exit(0);
   }
 
@@ -240,7 +231,7 @@ BOOLEAN listar_archivos_usuario(int sockid, int id_usuario, int id_album){
     strcat(ruta, EXTENSION_ARCHIVO_TEMPORAL);
   }
 
-  recibir_archivo_socket("Cliente", sockid, ruta);
+  recibir_archivo_socket("-", sockid, ruta);
 
   if((fp = fopen(ruta, "r")) != NULL){
     printf("\n");
@@ -252,7 +243,6 @@ BOOLEAN listar_archivos_usuario(int sockid, int id_usuario, int id_album){
     if(strlen(buffer) == 0){
       printf("El album seleccionado no posee archivos registrados.\n");
     }
-    printf("\n");
     close(fp);
     remove(ruta);
   }
@@ -277,12 +267,12 @@ BOOLEAN listar_usuarios_registrados(int sockid, int id_usuario){
   mensaje_solicitud->ID_Archivo = 0;
 
   if((write(sockid,(void *)mensaje_solicitud,sizeof(SOLICITUD))) < 0){
-    printf("client: write  error :%d\n", errno);
+    printf("Cliente TCP: Error de escritura en el socket: %d\n", errno);
     exit(0);
   }
 
   if((read(sockid,(char *)msg,MAXLINEA))< 0){
-    printf("client: read  error :%d\n", errno);
+    printf("Cliente TCP: Error de lectura en el socket: %d\n", errno);
     exit(0);
   }
 
@@ -298,7 +288,7 @@ BOOLEAN listar_usuarios_registrados(int sockid, int id_usuario){
     strcat(ruta, EXTENSION_ARCHIVO_TEMPORAL);
   }
 
-  recibir_archivo_socket("Cliente", sockid, ruta);
+  recibir_archivo_socket("-", sockid, ruta);
 
   if((fp = fopen(ruta, "r")) != NULL){
     printf("\n");
@@ -310,7 +300,6 @@ BOOLEAN listar_usuarios_registrados(int sockid, int id_usuario){
     if(strlen(buffer) == 0){
       printf("Usted no tiene usuarios registrados.\n");
     }
-    printf("\n");
     close(fp);
     remove(ruta);
   }
@@ -335,12 +324,12 @@ BOOLEAN listar_albumes_compartidos_usuario(int sockid, int id_usuario){
   mensaje_solicitud->ID_Archivo = 0;
 
   if((write(sockid,(void *)mensaje_solicitud,sizeof(SOLICITUD))) < 0){
-    printf("client: write  error :%d\n", errno);
+    printf("Cliente TCP: Error de escritura en el socket: %d\n", errno);
     exit(0);
   }
 
   if((read(sockid,(char *)msg,MAXLINEA))< 0){
-    printf("client: read  error :%d\n", errno);
+    printf("Cliente TCP: Error de lectura en el socket: %d\n", errno);
     exit(0);
   }
 
@@ -356,7 +345,7 @@ BOOLEAN listar_albumes_compartidos_usuario(int sockid, int id_usuario){
     strcat(ruta, EXTENSION_ARCHIVO_TEMPORAL);
   }
 
-  recibir_archivo_socket("Cliente", sockid, ruta);
+  recibir_archivo_socket("-", sockid, ruta);
 
   if((fp = fopen(ruta, "r")) != NULL){
     printf("\n");
@@ -368,7 +357,6 @@ BOOLEAN listar_albumes_compartidos_usuario(int sockid, int id_usuario){
     if(strlen(buffer) == 0){
       printf("Usted no tiene albumes que se le hayan compartido.\n");
     }
-    printf("\n");
     close(fp);
     remove(ruta);
   }
@@ -393,12 +381,12 @@ BOOLEAN listar_albumes_compartidos_otros(int sockid, int id_usuario){
   mensaje_solicitud->ID_Archivo = 0;
 
   if((write(sockid,(void *)mensaje_solicitud,sizeof(SOLICITUD))) < 0){
-    printf("client: write  error :%d\n", errno);
+    printf("Cliente TCP: Error de escritura en el socket: %d\n", errno);
     exit(0);
   }
 
   if((read(sockid,(char *)msg,MAXLINEA))< 0){
-    printf("client: read  error :%d\n", errno);
+    printf("Cliente TCP: Error de lectura en el socket: %d\n", errno);
     exit(0);
   }
 
@@ -414,7 +402,7 @@ BOOLEAN listar_albumes_compartidos_otros(int sockid, int id_usuario){
     strcat(ruta, EXTENSION_ARCHIVO_TEMPORAL);
   }
 
-  recibir_archivo_socket("Cliente", sockid, ruta);
+  recibir_archivo_socket("-", sockid, ruta);
 
   if((fp = fopen(ruta, "r")) != NULL){
     printf("\n");
@@ -426,7 +414,6 @@ BOOLEAN listar_albumes_compartidos_otros(int sockid, int id_usuario){
     if(strlen(buffer) == 0){
       printf("Usted no tiene albumes compartidos con otros usuarios.\n");
     }
-    printf("\n");
     close(fp);
     remove(ruta);
   }

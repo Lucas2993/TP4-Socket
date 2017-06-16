@@ -172,8 +172,8 @@ BOOLEAN recibir_archivo_socket(char * identificador_origen, int socket_id, char 
   printf("\n");
 
   fclose(fp);
-
-  printf("%s: Se ha recibido y almacenado el archivo exitosamente.\n",identificador_origen);
+  if(strcmp(identificador_origen, "-") != 0)
+    printf("%s: Se ha recibido y almacenado el archivo exitosamente.\n",identificador_origen);
   close(socket_id);
 
   return TRUE;

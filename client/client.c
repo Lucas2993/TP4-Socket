@@ -38,13 +38,13 @@ int main(int argc, char ** argv) {
 	bzero((char *) &dir, sizeof(dir)); // Se blanquea toda la estructura
 	dir.sin_family = AF_INET; // (Address Family)
 	if (inet_pton( AF_INET, argv[1], &dir.sin_addr) <= 0) { // Se trasforma la ip de texto a tipo ip (binario).
-		perror("Error en la función inet_pton:");
+		perror("Cliente UDP: Error en la función inet_pton.");
 		exit(-1);
 	}
 	dir.sin_port = htons(atoi(argv[2])); // Se convierte el numero de puerto a un dato de la red.
 
 	if ((descriptor = socket( AF_INET, SOCK_DGRAM, 0)) < 0) {
-		perror("ERROR SOCKET:");
+		perror("Cliente UDP: No se pudo crear el socket.\n");
 		exit(-1);
 	}
 
@@ -168,37 +168,36 @@ void analizar_respuesta(char * linea_rcb){
 	switch(*linea_rcb){
 	case M_ERROR:
 		mensaje_error = (ERROR *)linea_rcb;
-		printf("%s\n", mensaje_error->mensaje);
+		printf("Cliente UDP: Error: %s\n", mensaje_error->mensaje);
 		break;
 	case M_CONFIRMAR:
 		mensaje_confirmacion = (CONFIRMAR *)linea_rcb;
-		if(mensaje_confirmacion->ID_Usuario - '0' > 0){
-			id_usuario = mensaje_confirmacion->ID_Usuario - '0';
-			// printf("Id de usuario obtenido: %d\n", id_usuario);
+		if(mensaje_confirmacion->ID_Usuario > 0){
+			id_usuario = mensaje_confirmacion->ID_Usuario;
 		}
 		else{
-			if(mensaje_confirmacion->ID_SUB_OP - '0' == 0){
+			if(mensaje_confirmacion->ID_SUB_OP == 0){
 				id_usuario = -1;
 			}
 		}
-		printf("%s\n", mensaje_confirmacion->mensaje);
+		printf("Cliente UDP: %s\n", mensaje_confirmacion->mensaje);
 		break;
 	default:
-		printf("Cliente: Error desconocido\n");
+		printf("Cliente UDP: Error: La respuesta brindada por el servidor no pudo ser reconocida.\n");
 		break;
 	}
 
 }
 
 void * cerrar_sesion(int * longitud){
-	return mensaje_cerrar_sesion(id_usuario , longitud);
+	return mensaje_cerrar_sesion(id_usuario, longitud);
 }
 
 void * crear_album(int * longitud){
 	char nombre_album [MAX_NOMBRE_SOLICITUD];
 
 	obtener_datos("Ingrese el nombre del nuevo album: ","%s",nombre_album);
-	return mensaje_solicitud( id_usuario+ '0' , SubOP_Crear_album , '0' , '0' , nombre_album, longitud );
+	return mensaje_solicitud( id_usuario, SubOP_Crear_album , 0 , 0 , nombre_album, longitud );
 
 }
 
@@ -208,7 +207,7 @@ void * eliminar_album(int * longitud){
 	char nombre_album [MAX_NOMBRE_SOLICITUD];
 	// obtener_datos("Ingrese el nombre del album a eliminar\n","%s",nombre_album);
 	// return mensaje_solicitud( id_usuario+ '0' , SubOP_Eliminar_album , '0' , '0' , nombre_album, longitud );
-	return mensaje_solicitud( id_usuario+ '0' , SubOP_Eliminar_album , id_album+'0' , '0' , nombre_album, longitud );
+	return mensaje_solicitud( id_usuario, SubOP_Eliminar_album , id_album, 0, nombre_album, longitud );
 
 }
 

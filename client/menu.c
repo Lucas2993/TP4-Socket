@@ -3,6 +3,7 @@
 
 void imprimir_menu(ITEM_MENU menu, int cantidad_items){
 	int i;
+	printf("\n");
 	printf("Menu:\n");
 	for(i = 0;i < cantidad_items;++menu,i++){
 		printf("%d - %s\n",i+1, menu->nombre);
